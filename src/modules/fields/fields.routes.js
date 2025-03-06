@@ -5,6 +5,7 @@ import {
   addField,
   deleteField,
   getAllFields,
+  getFieldById,
   updateField,
 } from "./fields.controller.js";
 import { fieldValidation, updateFieldValidation } from "./fields.validation.js";
@@ -12,7 +13,7 @@ import { fieldValidation, updateFieldValidation } from "./fields.validation.js";
 const fieldRoutes = express.Router();
 
 fieldRoutes.get("/get-all-fields", protect, restrictTo("admin"), getAllFields);
-
+fieldRoutes.get("/get-field/:id", protect, restrictTo("admin"), getFieldById);
 fieldRoutes.post(
   "/add-field",
   protect,

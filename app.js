@@ -16,6 +16,8 @@ import clientRoutes from "./src/modules/clients/clients.routes.js";
 import countryRoutes from "./src/modules/countries/country.routes.js";
 import advertiserRoutes from "./src/modules/advertisers/advertiser.routes.js";
 import fieldRoutes from "./src/modules/fields/fields.routes.js";
+import siteInfoRoutes from "./src/modules/site_info/siteInfo.routes.js";
+import tenderRoutes from "./src/modules/Tenders/tenders.routes.js";
 
 dotenv.config();
 const app = express();
@@ -68,7 +70,8 @@ app.use(`/api/v1/clients`, clientRoutes);
 app.use(`/api/v1/countries`, countryRoutes);
 app.use(`/api/v1/advertisers`, advertiserRoutes);
 app.use(`/api/v1/fields`, fieldRoutes);
-// app.use(`${BASE_URL}/auth`, userRoutes);
+app.use(`/api/v1/site-info`, siteInfoRoutes);
+app.use(`/api/v1/tenders`, tenderRoutes);
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "mySecretKey",

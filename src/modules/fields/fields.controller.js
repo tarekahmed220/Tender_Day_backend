@@ -26,6 +26,27 @@ export const getAllFields = catchError(async (req, res, next) => {
   res.status(200).json({ data: groupedFields });
 });
 
+export const getFieldById = catchError(async (req, res, next) => {
+  const { id } = req.params;
+
+  const field = await fieldModel
+    .findById(id)
+    .populate("parent", "name_ar name_en")
+    .lean();
+
+  if (!field || field.isDeleted) {
+    return next(new AppError("المجال غير موجود", 404));
+  }
+
+  const subFields = await fieldModel.find({ parent: id, isDeleted: false });
+
+  res.status(200).json({
+    data: field,
+    subFields,
+    subFieldsCount: subFields.length,
+  });
+});
+
 export const addField = catchError(async (req, res, next) => {
   const { name_ar, name_en, parent } = req.body;
 
@@ -36,6 +57,14 @@ export const addField = catchError(async (req, res, next) => {
   });
 
   if (existingField) {
+    if (existingField.isDeleted) {
+      existingField.isDeleted = false;
+      await existingField.save();
+      return res.status(200).json({
+        message: "تمت إعادة تفعيل المجال بنجاح",
+        field: existingField,
+      });
+    }
     return next(new AppError("هذا المجال موجود بالفعل", 400));
   }
 
