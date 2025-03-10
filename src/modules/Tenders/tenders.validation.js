@@ -33,6 +33,9 @@ export const addTenderValidation = Joi.object({
   country: Joi.string().trim().required().messages({
     "string.empty": "يجب اختيار الدولة",
   }),
+  currency: Joi.string().trim().required().messages({
+    "string.empty": "يجب اختيار العملة",
+  }),
 
   mainField: Joi.string().trim().required().messages({
     "string.empty": "يجب اختيار المجال الرئيسي",

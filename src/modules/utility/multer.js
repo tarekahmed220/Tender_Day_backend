@@ -1,15 +1,16 @@
 import multer from "multer";
 import path from "path";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+import fs from "fs";
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/tenders/");
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
-  },
-});
+const uploadDir = path.resolve("uploads", "tenders");
+
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const storage = multer.memoryStorage();
 
 export const upload = multer({
   storage,
@@ -22,8 +23,8 @@ export const upload = multer({
       "application/zip",
     ];
     if (!allowedTypes.includes(file.mimetype)) {
-      return cb(new AppError("صيغة الملف غير مدعومة", 400), false);
+      return cb(new Error("صيغة الملف غير مدعومة"), false);
     }
     cb(null, true);
   },
-}).single("file");
+});

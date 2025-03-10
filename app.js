@@ -1,23 +1,26 @@
+import compression from "compression";
+import MongoStore from "connect-mongo";
+import cookieParser from "cookie-parser";
+import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
-import { dbConnect } from "./db/connectDb.js";
-import cors from "cors";
-import cookieParser from "cookie-parser";
-import helmet from "helmet";
-import rateLimit from "express-rate-limit";
-import compression from "compression";
-import morgan from "morgan";
-import userRoutes from "./src/modules/auth/auth.routes.js";
 import mongoSanitize from "express-mongo-sanitize";
-import hpp from "hpp";
-import MongoStore from "connect-mongo";
+import rateLimit from "express-rate-limit";
 import session from "express-session";
+import helmet from "helmet";
+import hpp from "hpp";
+import morgan from "morgan";
+import path, { dirname } from "path";
+import { fileURLToPath } from "url";
+import { dbConnect } from "./db/connectDb.js";
+import advertiserRoutes from "./src/modules/advertisers/advertiser.routes.js";
+import userRoutes from "./src/modules/auth/auth.routes.js";
 import clientRoutes from "./src/modules/clients/clients.routes.js";
 import countryRoutes from "./src/modules/countries/country.routes.js";
-import advertiserRoutes from "./src/modules/advertisers/advertiser.routes.js";
 import fieldRoutes from "./src/modules/fields/fields.routes.js";
 import siteInfoRoutes from "./src/modules/site_info/siteInfo.routes.js";
 import tenderRoutes from "./src/modules/Tenders/tenders.routes.js";
+import currencyRoutes from "./src/modules/currency/currency.routes.js";
 
 dotenv.config();
 const app = express();
@@ -26,9 +29,12 @@ dbConnect();
 
 const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",") || [
   "http://localhost:3000",
+  "http://localhost:5173",
 ];
 
 const BASE_URL = process.env.BASE_URL || "/api/v1";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const corsOptions = {
   origin: (origin, callback) => {
@@ -40,6 +46,7 @@ const corsOptions = {
   },
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true,
+  allowedOrigins: ["Content-Type", "Authorization"],
 };
 
 const limiter = rateLimit({
@@ -51,7 +58,7 @@ const limiter = rateLimit({
 });
 
 app.use(express.json({ limit: "10kb" }));
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: false, limit: 1000 }));
 app.use(cookieParser());
 app.use(cors(corsOptions));
 app.use(
@@ -72,6 +79,14 @@ app.use(`/api/v1/advertisers`, advertiserRoutes);
 app.use(`/api/v1/fields`, fieldRoutes);
 app.use(`/api/v1/site-info`, siteInfoRoutes);
 app.use(`/api/v1/tenders`, tenderRoutes);
+app.use(`/api/v1/currencies`, currencyRoutes);
+// app.use(
+//   "/uploads/tenders",
+//   express.static(path.join(__dirname, "uploads/tenders"))
+// );
+
+app.use("/uploads/tenders", express.static(path.resolve("uploads", "tenders")));
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "mySecretKey",

@@ -1,5 +1,6 @@
 export const validation = (schema) => {
   return (req, res, next) => {
+    console.log(">>>>>>>", req);
     const { error } = schema.validate(
       { ...req.body, ...req.params },
       { abortEarly: false, errors: { label: "key" } }

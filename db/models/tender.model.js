@@ -36,6 +36,11 @@ const tenderSchema = new mongoose.Schema(
       ref: "Country",
       required: [true, "يجب اختيار الدولة"],
     },
+    currency: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Currency",
+      required: [true, "يجب اختيار العملة"],
+    },
     mainField: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Field",
