@@ -8,6 +8,13 @@ export const siteInfoValidation = Joi.object({
   aboutUs_en: Joi.string().trim().allow("", null).messages({
     "string.empty": "يجب إدخال نبذة عن الموقع باللغة الإنجليزية",
   }),
+  whySubscribe_ar: Joi.string().trim().allow("", null).messages({
+    "string.empty": "يجب إدخال لماذا تشترك باللغة العربية",
+  }),
+
+  whySubscribe_en: Joi.string().trim().allow("", null).messages({
+    "string.empty": "يجب إدخال لماذا تشترك باللغة الإنجليزية",
+  }),
 
   whatsapp: Joi.string()
     .trim()

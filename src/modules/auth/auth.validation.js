@@ -43,17 +43,9 @@ export const registerValidation = Joi.object({
 
   isActive: Joi.boolean().default(true),
 
-  country: Joi.string()
-    .min(2)
-    .max(50)
-    .trim()
-    .required()
-    .messages({
-      "string.empty": "برجاء إدخال الدولة التابع لها",
-      "string.min": "يجب أن يكون اسم الدولة على الأقل حرفين",
-      "string.max": "يجب ألا يتجاوز اسم الدولة 50 حرفًا",
-    })
-    .label("الدولة"),
+  country: Joi.string().trim().required().messages({
+    "string.empty": "يجب اختيار الدولة",
+  }),
 
   subscriptionStatus: Joi.string()
     .valid("active", "inactive", "expired")
@@ -104,4 +96,31 @@ export const userLoginSchema = Joi.object({
     "string.empty": "كلمة المرور مطلوبة",
     "any.required": "كلمة المرور مطلوبة",
   }),
+});
+
+export const emailValidationSchema = Joi.object({
+  email: Joi.string()
+    .email({ tlds: { allow: false } })
+    .required()
+    .messages({
+      "string.email": "من فضلك أدخل بريد إلكتروني صالح",
+      "any.required": "البريد الإلكتروني مطلوب",
+    }),
+});
+
+export const passwordValidationSchema = Joi.object({
+  currentPassword: Joi.string().required().messages({
+    "any.required": "كلمة المرور الحالية مطلوبة",
+  }),
+  newPassword: Joi.string().min(6).required().messages({
+    "string.min": "يجب أن تكون كلمة المرور 6 أحرف على الأقل",
+    "any.required": "كلمة المرور الجديدة مطلوبة",
+  }),
+  confirmPassword: Joi.string()
+    .valid(Joi.ref("newPassword"))
+    .required()
+    .messages({
+      "any.only": "كلمة المرور الجديدة غير متطابقة",
+      "any.required": "تأكيد كلمة المرور مطلوب",
+    }),
 });

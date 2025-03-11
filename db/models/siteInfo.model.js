@@ -29,6 +29,16 @@ const siteInfoSchema = new mongoose.Schema(
       match: [/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/, "البريد الإلكتروني غير صالح"],
       default: "",
     },
+    whySubscribe_ar: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    whySubscribe_en: {
+      type: String,
+      trim: true,
+      default: "",
+    },
   },
   { versionKey: false }
 );

@@ -1,4 +1,4 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Mongoose, Schema } from "mongoose";
 import bcrypt from "bcrypt";
 
 const userSchema = new Schema(
@@ -27,7 +27,7 @@ const userSchema = new Schema(
     },
     role: {
       type: String,
-      enum: ["client"],
+      enum: ["client", "admin"],
       default: "client",
       required: true,
     },
@@ -35,24 +35,30 @@ const userSchema = new Schema(
       type: Boolean,
       default: true,
     },
+
     country: {
-      type: String,
-      default: "Unknown",
-      required: true,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Country",
+      required: [true, "يجب اختيار الدولة"],
     },
+
     subscriptionStatus: {
       type: String,
       enum: ["active", "inactive", "expired"],
       default: "inactive",
     },
-    subscriptionPaymentDate: {
-      type: Date,
-      default: null,
-    },
-    subscriptionExpiryDate: {
-      type: Date,
-      default: null,
-    },
+    subscriptions: [
+      {
+        paymentDate: {
+          type: Date,
+          required: true,
+        },
+        expiryDate: {
+          type: Date,
+          required: true,
+        },
+      },
+    ],
     isDeleted: {
       type: Boolean,
       default: false,

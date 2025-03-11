@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import userModel from "../../db/models/user.model.js";
 import AppError from "../modules/utility/appError.js";
+import catchError from "./handleError.js";
 
 export const protect = async (req, res, next) => {
   let token;
@@ -43,3 +44,21 @@ export const restrictTo = (...roles) => {
     next();
   };
 };
+
+export const restrictToSubscription = catchError(async (req, res, next) => {
+  const user = req.user;
+
+  if (user.role === "admin") {
+    return next();
+  }
+
+  if (
+    user.subscriptionStatus === "expired" ||
+    user.subscriptionStatus === "inactive" ||
+    (user.subscriptionExpiryDate && new Date() > user.subscriptionExpiryDate)
+  ) {
+    return next(new AppError("اشتراكك منتهي، من فضلك جدد الاشتراك", 403));
+  }
+
+  next();
+});
