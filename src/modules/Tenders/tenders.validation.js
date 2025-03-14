@@ -26,10 +26,6 @@ export const addTenderValidation = Joi.object({
     "string.empty": "يجب إدخال رقم المناقصة",
   }),
 
-  serialNumber: Joi.string().trim().required().messages({
-    "string.empty": "يجب إدخال الرقم التسلسلي",
-  }),
-
   country: Joi.string().trim().required().messages({
     "string.empty": "يجب اختيار الدولة",
   }),

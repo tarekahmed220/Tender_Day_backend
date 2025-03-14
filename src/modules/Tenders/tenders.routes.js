@@ -5,6 +5,8 @@ import {
   updateTender,
   deleteTender,
   getTenderById,
+  deleteTenderPermanently,
+  restoreTender,
 } from "./tenders.controller.js";
 
 import { validation } from "../../middleware/validation.js";
@@ -35,11 +37,18 @@ tenderRoutes.put(
   validation(updateTenderValidation),
   updateTender
 );
+tenderRoutes.patch("/restore/:id", protect, restrictTo("admin"), restoreTender);
 tenderRoutes.delete(
   "/delete-tender/:id",
   protect,
   restrictTo("admin"),
   deleteTender
+);
+tenderRoutes.delete(
+  "/delete-tender-permanently/:id",
+  protect,
+  restrictTo("admin"),
+  deleteTenderPermanently
 );
 
 export default tenderRoutes;

@@ -18,12 +18,7 @@ const register = catchError(async (req, res, next) => {
 
   const targetUser = await userModel.findOne({ email });
   if (targetUser) {
-    return next(
-      new AppError(
-        "هذا البريد مسجل بالفعل من قبل، من فضلك قم بتسجيل الدخول",
-        400
-      )
-    );
+    return next(new AppError("هذا البريد مسجل بالفعل من قبل", 400));
   }
 
   let subscriptions = [];

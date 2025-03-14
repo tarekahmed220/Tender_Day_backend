@@ -3,6 +3,10 @@ import catchError from "../../middleware/handleError.js";
 import AppError from "../utility/appError.js";
 
 export const getAllFields = catchError(async (req, res, next) => {
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
+
   const fields = await fieldModel
     .find({ isDeleted: false })
     .populate("parent", "name_ar name_en")
@@ -20,10 +24,12 @@ export const getAllFields = catchError(async (req, res, next) => {
         subFieldsCount: subFields.length,
       });
     }
+
     return acc;
   }, []);
-
-  res.status(200).json({ data: groupedFields });
+  const totalCount = groupedFields.length;
+  const paginatedFields = groupedFields.slice(skip, skip + limit);
+  res.status(200).json({ data: paginatedFields, totalCount, skip });
 });
 
 export const getFieldById = catchError(async (req, res, next) => {
@@ -37,13 +43,18 @@ export const getFieldById = catchError(async (req, res, next) => {
   if (!field || field.isDeleted) {
     return next(new AppError("المجال غير موجود", 404));
   }
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
 
   const subFields = await fieldModel.find({ parent: id, isDeleted: false });
-
+  const totalCount = subFields.length;
+  const paginatedSubFields = subFields.slice(skip, skip + limit);
   res.status(200).json({
     data: field,
-    subFields,
-    subFieldsCount: subFields.length,
+    subFields: paginatedSubFields,
+    totalCount,
+    skip,
   });
 });
 

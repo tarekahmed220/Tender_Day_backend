@@ -27,10 +27,6 @@ const tenderSchema = new mongoose.Schema(
       required: [true, "يجب إدخال رقم المناقصة"],
       unique: true,
     },
-    serialNumber: {
-      type: String,
-      required: [true, "يجب إدخال الرقم التسلسلي"],
-    },
     country: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Country",

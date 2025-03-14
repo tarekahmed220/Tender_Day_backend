@@ -16,12 +16,14 @@ export const getAllAdvertisers = catchError(async (req, res, next) => {
     .limitFields()
     .paginate();
   const advertisers = await features.query;
-
+  const page = req.query.page * 1 || 1;
+  const limit = req.query.limit * 1 || 10;
+  const skip = (page - 1) * limit;
   if (!advertisers.length) {
     return next(new AppError("لا تتوفر قائمة معلنين ", 404));
   }
 
-  res.status(200).json({ data: advertisers, totalCount });
+  res.status(200).json({ data: advertisers, totalCount, skip });
 });
 
 export const addAdvertiser = catchError(async (req, res, next) => {

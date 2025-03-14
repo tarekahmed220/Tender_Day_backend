@@ -6,6 +6,20 @@ import APIFeatures from "../utility/APIFeatures.js";
 import AppError from "../utility/appError.js";
 
 const getAllClients = catchError(async (req, res, next) => {
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
+
+  console.log("limit:", limit, "skip:", skip);
+
+  const filteredCountFeatures = new APIFeatures(
+    userModel.find({ isDeleted: false, role: "client" }),
+    req.query
+  )
+    .search()
+    .filter();
+  const totalCount = await filteredCountFeatures.query.countDocuments();
+
   const features = new APIFeatures(
     userModel
       .find({ isDeleted: false, role: "client" })
@@ -25,15 +39,11 @@ const getAllClients = catchError(async (req, res, next) => {
     return res.status(200).json({ message: "لا يوجد عملاء" });
   }
 
-  const filteredCountFeatures = new APIFeatures(
-    userModel.find({ isDeleted: false, role: "client" }),
-    req.query
-  )
-    .search()
-    .filter();
-  const totalCount = await filteredCountFeatures.query.countDocuments();
-
-  res.status(200).json({ data: clients, totalCount });
+  res.status(200).json({
+    data: clients,
+    totalCount,
+    skip,
+  });
 });
 
 const deleteClient = catchError(async (req, res, next) => {

@@ -15,12 +15,15 @@ export const getAllCountries = catchError(async (req, res, next) => {
     .limitFields()
     .paginate();
   const countries = await features.query;
+  const page = req.query.page * 1 || 1;
+  const limit = req.query.limit * 1 || 10;
+  const skip = (page - 1) * limit;
 
   if (!countries.length) {
     return next(new AppError("لا توجد دول متاحة", 404));
   }
 
-  res.status(200).json({ data: countries, totalCount });
+  res.status(200).json({ data: countries, totalCount, skip });
 });
 
 export const addCountry = catchError(async (req, res, next) => {

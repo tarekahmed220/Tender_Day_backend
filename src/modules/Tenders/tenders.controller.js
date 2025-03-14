@@ -7,6 +7,7 @@ import APIFeatures from "../utility/APIFeatures.js";
 import AppError from "../utility/appError.js";
 
 export const getAllTenders = catchError(async (req, res, next) => {
+  console.log("Query params:", req.query);
   const featuresForCount = new APIFeatures(
     Tender.find({ isDeleted: false }),
     req.query
@@ -15,6 +16,9 @@ export const getAllTenders = catchError(async (req, res, next) => {
     .filter();
 
   const filteredCount = await featuresForCount.query.countDocuments();
+  const page = req.query.page * 1 || 1;
+  const limit = req.query.limit * 1 || 10;
+  const skip = (page - 1) * limit;
 
   const features = new APIFeatures(
     Tender.find({ isDeleted: false })
@@ -42,6 +46,7 @@ export const getAllTenders = catchError(async (req, res, next) => {
     data: tendersWithImageUrls,
     totalCount: filteredCount,
     pageCount: Math.ceil(filteredCount / (req.query.limit || 10)),
+    skip,
   });
 });
 
@@ -58,7 +63,7 @@ export const getTenderById = catchError(async (req, res, next) => {
     .populate("advertiser", "phone email address")
     .lean();
 
-  if (!tender || tender.isDeleted) {
+  if (!tender) {
     return next(new AppError("المناقصة غير موجودة", 404));
   }
 
@@ -81,7 +86,6 @@ export const addTender = catchError(async (req, res, next) => {
     description_ar,
     description_en,
     tenderNumber,
-    serialNumber,
     country,
     currency,
     mainField,
@@ -95,7 +99,7 @@ export const addTender = catchError(async (req, res, next) => {
   } = req.body;
 
   const existingTender = await Tender.findOne({
-    $or: [{ tenderNumber }, { serialNumber }],
+    $or: [{ tenderNumber }],
   });
 
   if (existingTender) {
@@ -153,7 +157,6 @@ export const addTender = catchError(async (req, res, next) => {
     description_ar,
     description_en,
     tenderNumber,
-    serialNumber,
     country,
     currency,
     mainField,
@@ -189,7 +192,6 @@ export const updateTender = catchError(async (req, res, next) => {
     "description_ar",
     "description_en",
     "tenderNumber",
-    "serialNumber",
     "country",
     "currency",
     "mainField",
@@ -248,65 +250,6 @@ export const updateTender = catchError(async (req, res, next) => {
   });
 });
 
-// export const updateTender = catchError(async (req, res, next) => {
-//   const { id } = req.params;
-//   const tender = await Tender.findById(id);
-
-//   if (!tender || tender.isDeleted) {
-//     return next(new AppError("المناقصة غير موجودة", 404));
-//   }
-
-//   const allowedFields = [
-//     "name_ar",
-//     "name_en",
-//     "description_ar",
-//     "description_en",
-//     "tenderNumber",
-//     "serialNumber",
-//     "country",
-//     "currency",
-//     "mainField",
-//     "subField",
-//     "province",
-//     "advertiser",
-//     "closingDate",
-//     "documentPrice",
-//     "guaranteeAmount",
-//     "sourceInfo",
-//   ];
-
-//   allowedFields.forEach((field) => {
-//     if (req.body[field] !== undefined) {
-//       tender[field] = req.body[field];
-//     }
-//   });
-
-//   if (req.file) {
-//     const fileName = `${Date.now()}-${Math.round(
-//       Math.random() * 1e9
-//     )}${path.extname(req.file.originalname)}`;
-//     const filePath = path.join(uploadDir, fileName);
-
-//     if (!fs.existsSync(uploadDir)) {
-//       fs.mkdirSync(uploadDir, { recursive: true });
-//     }
-
-//     try {
-//       fs.writeFileSync(filePath, req.file.buffer);
-//       tender.fileUrl = `/uploads/tenders/${fileName}`;
-//     } catch (error) {
-//       return next(new AppError(`فشل في حفظ الملف: ${error.message}`, 500));
-//     }
-//   }
-
-//   await tender.save();
-
-//   res.status(200).json({
-//     message: "تم تحديث بيانات المناقصة بنجاح",
-//     tender,
-//   });
-// });
-
 export const deleteTender = catchError(async (req, res, next) => {
   const { id } = req.params;
   const tender = await Tender.findById(id);
@@ -323,4 +266,58 @@ export const deleteTender = catchError(async (req, res, next) => {
   await tender.save();
 
   res.status(200).json({ message: "تم حذف المناقصة بنجاح" });
+});
+
+export const deleteTenderPermanently = catchError(async (req, res, next) => {
+  const { id } = req.params;
+
+  if (!mongoose.isValidObjectId(id)) {
+    return next(new AppError("معرّف المناقصة غير صالح", 400));
+  }
+
+  const tender = await Tender.findById(id);
+
+  if (!tender) {
+    return next(new AppError("المناقصة غير موجودة", 404));
+  }
+
+  if (tender.fileUrl) {
+    const filePath = path.join(
+      "uploads",
+      "tenders",
+      path.basename(tender.fileUrl)
+    );
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+  }
+
+  await Tender.deleteOne({ _id: id });
+
+  res
+    .status(200)
+    .json({ message: "تم حذف المناقصة والملفات المرتبطة بها نهائيًا" });
+});
+
+export const restoreTender = catchError(async (req, res, next) => {
+  const { id } = req.params;
+
+  if (!mongoose.isValidObjectId(id)) {
+    return next(new AppError("معرّف المناقصة غير صالح", 400));
+  }
+
+  const tender = await Tender.findById(id);
+
+  if (!tender) {
+    return next(new AppError("المناقصة غير موجودة", 404));
+  }
+
+  if (!tender.isDeleted) {
+    return res.status(200).json({ message: "المناقصة غير محذوفة بالفعل" });
+  }
+
+  tender.isDeleted = false;
+  await tender.save();
+
+  res.status(200).json({ message: "تم استعادة المناقصة بنجاح", tender });
 });
