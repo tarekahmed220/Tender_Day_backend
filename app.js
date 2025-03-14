@@ -24,12 +24,13 @@ import currencyRoutes from "./src/modules/currency/currency.routes.js";
 
 dotenv.config();
 const app = express();
-const port = process.env.PORT || 5500;
+const port = process.env.PORT || 3000;
 dbConnect();
 
 const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",") || [
   "http://localhost:3000",
   "http://localhost:5173",
+  "https://tender-day-backend.vercel.app",
 ];
 
 const BASE_URL = process.env.BASE_URL || "/api/v1";
