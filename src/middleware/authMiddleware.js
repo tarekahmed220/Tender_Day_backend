@@ -2,34 +2,23 @@ import jwt from "jsonwebtoken";
 import userModel from "../../db/models/user.model.js";
 import AppError from "../modules/utility/appError.js";
 import catchError from "./handleError.js";
+import isSubscriptionValid from "../modules/utility/isSubscriptionValid.js";
 
 export const protect = async (req, res, next) => {
-  let token;
-
-  if (req.cookies.token) {
-    token = req.cookies.token;
-  }
+  let token = req.cookies?.token;
 
   if (!token) {
-    return next(new AppError("غير مصرح به، الرجاء تسجيل الدخول", 401));
+    return next(new AppError("من فضلك قم بتسجيل الدخول أولا", 401));
   }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = await userModel.findById(decoded.id);
-    if (!req.user) {
+    const user = await userModel.findById(decoded.id);
+    if (!user) {
       return next(new AppError("مستخدم غير موجود", 404));
     }
-    if (req.user.subscriptionStatus === "expired") {
-      res.clearCookie("token");
-      return next(
-        new AppError(
-          "لقد انتهت صلاحية اشتراكك. يرجى تسجيل الدخول مرة أخرى",
-          403
-        )
-      );
-    }
 
+    req.user = user;
     next();
   } catch (error) {
     return next(new AppError("رمز تحقق غير صالح", 401));
@@ -46,19 +35,8 @@ export const restrictTo = (...roles) => {
 };
 
 export const restrictToSubscription = catchError(async (req, res, next) => {
-  const user = req.user;
-
-  if (user.role === "admin") {
-    return next();
-  }
-
-  if (
-    user.subscriptionStatus === "expired" ||
-    user.subscriptionStatus === "inactive" ||
-    (user.subscriptionExpiryDate && new Date() > user.subscriptionExpiryDate)
-  ) {
+  if (!isSubscriptionValid(req.user)) {
     return next(new AppError("اشتراكك منتهي، من فضلك جدد الاشتراك", 403));
   }
-
   next();
 });

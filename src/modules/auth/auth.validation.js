@@ -1,17 +1,11 @@
 import Joi from "joi";
 
-export const registerValidation = Joi.object({
-  name: Joi.string()
-    .min(3)
-    .max(50)
-    .trim()
-    .required()
-    .messages({
-      "string.empty": "الاسم مطلوب",
-      "string.min": "يجب أن يكون الاسم على الأقل 3 أحرف",
-      "string.max": "يجب ألا يتجاوز الاسم 50 حرفًا",
-    })
-    .label("الاسم"),
+export const registerClientValidation = Joi.object({
+  name: Joi.string().min(2).max(50).trim().required().messages({
+    "string.empty": "الاسم مطلوب",
+    "string.min": "يجب أن يكون الاسم على الأقل 2 أحرف",
+    "string.max": "يجب ألا يتجاوز الاسم 50 حرفًا",
+  }),
 
   email: Joi.string()
     .email({ tlds: { allow: false } })
@@ -21,31 +15,85 @@ export const registerValidation = Joi.object({
     .messages({
       "string.empty": "البريد الإلكتروني مطلوب",
       "string.email": "يجب إدخال بريد إلكتروني صالح",
-    })
-    .label("البريد الإلكتروني"),
+    }),
 
-  password: Joi.string()
-    .min(6)
+  password: Joi.string().min(6).required().messages({
+    "string.empty": "كلمة المرور مطلوبة",
+    "string.min": "يجب أن تكون كلمة المرور على الأقل 6 أحرف",
+  }),
+
+  phone: Joi.string()
+    .pattern(/^(\+?\d{6,15})$/)
     .required()
     .messages({
-      "string.empty": "كلمة المرور مطلوبة",
-      "string.min": "يجب أن تكون كلمة المرور على الأقل 6 أحرف",
-    })
-    .label("كلمة المرور"),
+      "string.pattern.base":
+        "رقم الهاتف غير صالح. يجب أن يحتوي على 6 إلى 15 رقم، مع أو بدون رمز الدولة.",
+      "string.empty": "رقم الهاتف مطلوب",
+    }),
 
-  role: Joi.string()
-    .valid("client", "admin")
-    .default("client")
-    .messages({
-      "any.only": "الدور يجب أن يكون إما 'client' أو 'admin'",
-    })
-    .label("الدور"),
-
-  isActive: Joi.boolean().default(true),
-
-  country: Joi.string().trim().required().messages({
-    "string.empty": "يجب اختيار الدولة",
+  country: Joi.string().min(2).max(50).required().messages({
+    "string.empty": "الدولة مطلوبة",
+    "string.min": "الدولة يجب أن تكون على الأقل حرفين",
+    "string.max": "الدولة يجب ألا تتجاوز 50 حرفًا",
   }),
+
+  subscriptionCountries: Joi.array()
+    .items(Joi.string().required())
+    .min(1)
+    .required()
+    .messages({
+      "array.base": "يجب اختيار دولة أو أكثر للاشتراك",
+      "array.min": "يجب اختيار دولة واحدة على الأقل",
+      "any.required": "دول الاشتراك مطلوبة",
+    }),
+});
+
+export const registerByAdminValidation = Joi.object({
+  name: Joi.string().min(3).max(50).trim().required().messages({
+    "string.empty": "الاسم مطلوب",
+    "string.min": "يجب أن يكون الاسم على الأقل 3 أحرف",
+    "string.max": "يجب ألا يتجاوز الاسم 50 حرفًا",
+  }),
+
+  email: Joi.string()
+    .email({ tlds: { allow: false } })
+    .lowercase()
+    .trim()
+    .required()
+    .messages({
+      "string.empty": "البريد الإلكتروني مطلوب",
+      "string.email": "يجب إدخال بريد إلكتروني صالح",
+    }),
+
+  password: Joi.string().min(6).required().messages({
+    "string.empty": "كلمة المرور مطلوبة",
+    "string.min": "يجب أن تكون كلمة المرور على الأقل 6 أحرف",
+  }),
+
+  phone: Joi.string()
+    .pattern(/^(\+?\d{6,15})$/)
+    .required()
+    .messages({
+      "string.pattern.base":
+        "رقم الهاتف غير صالح. يجب أن يحتوي على 6 إلى 15 رقم، مع أو بدون رمز الدولة.",
+      "string.empty": "رقم الهاتف مطلوب",
+    }),
+
+  country: Joi.string().min(2).max(50).required().messages({
+    "string.empty": "الدولة مطلوبة",
+    "string.min": "الدولة يجب أن تكون على الأقل حرفين",
+    "string.max": "الدولة يجب ألا تتجاوز 50 حرفًا",
+  }),
+
+  subscriptionCountries: Joi.array()
+    .items(Joi.string().required())
+    .min(1)
+    .required()
+    .messages({
+      "array.base": "يجب اختيار دولة أو أكثر للاشتراك",
+      "array.min": "يجب اختيار دولة واحدة على الأقل",
+      "any.required": "دول الاشتراك مطلوبة",
+    }),
 
   subscriptionStatus: Joi.string()
     .valid("active", "inactive", "expired")
@@ -53,13 +101,15 @@ export const registerValidation = Joi.object({
     .messages({
       "any.only":
         "حالة الاشتراك يجب أن تكون 'active' أو 'inactive' أو 'expired'",
-    })
-    .label("حالة الاشتراك"),
+    }),
 
-  subscriptionPaymentDate: Joi.date().allow(null),
-  subscriptionExpiryDate: Joi.date().allow(null),
+  subscriptionPaymentDate: Joi.date()
+    .allow(null)
+    .messages({ "date.base": "تاريخ بداية الاشتراك غير صالح" }),
 
-  isDeleted: Joi.boolean().default(false),
+  subscriptionExpiryDate: Joi.date()
+    .allow(null)
+    .messages({ "date.base": "تاريخ نهاية الاشتراك غير صالح" }),
 });
 
 export const updateValidation = Joi.object({

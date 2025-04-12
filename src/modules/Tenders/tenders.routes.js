@@ -1,16 +1,24 @@
 import express from "express";
 import {
   getAllTenders,
+  getAllTendersForWebsite,
+  getTendersBySubField,
   addTender,
   updateTender,
   deleteTender,
   getTenderById,
   deleteTenderPermanently,
   restoreTender,
+  getTendersByAdvertisers,
+  getTendersByAdvertiser,
 } from "./tenders.controller.js";
 
 import { validation } from "../../middleware/validation.js";
-import { protect, restrictTo } from "../../middleware/authMiddleware.js";
+import {
+  protect,
+  restrictTo,
+  restrictToSubscription,
+} from "../../middleware/authMiddleware.js";
 import {
   addTenderValidation,
   updateTenderValidation,
@@ -19,6 +27,15 @@ import { upload } from "../utility/multer.js";
 
 const tenderRoutes = express.Router();
 tenderRoutes.get("/get-all-tenders", protect, getAllTenders);
+tenderRoutes.post("/get-all-tenders-website", getAllTendersForWebsite);
+tenderRoutes.get(
+  "/get-all-tenders-By-advertiser",
+  protect,
+  restrictToSubscription,
+  getTendersByAdvertiser
+);
+tenderRoutes.get("/get-tenders-by-subfield", getTendersBySubField);
+// tenderRoutes.get("/get-tenders-by-subfield", getTendersByAdvertisers);
 tenderRoutes.get("/get-tender-byid/:id", protect, getTenderById);
 tenderRoutes.post(
   "/add-tender",

@@ -10,12 +10,7 @@ import { countryValidation } from "./country.validation.js";
 
 const countryRoutes = express.Router();
 
-countryRoutes.get(
-  "/get-all-countries",
-  protect,
-  restrictTo("admin"),
-  getAllCountries
-);
+countryRoutes.get("/get-all-countries", getAllCountries);
 countryRoutes.post(
   "/add-country",
   protect,

@@ -5,9 +5,9 @@ import Tender from "../../../db/models/tender.model.js";
 import catchError from "../../middleware/handleError.js";
 import APIFeatures from "../utility/APIFeatures.js";
 import AppError from "../utility/appError.js";
+import advertiserModel from "../../../db/models/advertiser.model.js";
 
 export const getAllTenders = catchError(async (req, res, next) => {
-  console.log("Query params:", req.query);
   const featuresForCount = new APIFeatures(
     Tender.find({ isDeleted: false }),
     req.query
@@ -25,7 +25,8 @@ export const getAllTenders = catchError(async (req, res, next) => {
       .populate("country", "name_ar name_en")
       .populate("mainField", "name_ar name_en")
       .populate("subField", "name_ar name_en")
-      .populate("advertiser", "phone email address"),
+      .populate("mainAdvertiser", "name_ar name_en phone email address")
+      .populate("subAdvertiser", "name_ar name_en phone email address"),
     req.query
   )
     .search()
@@ -50,6 +51,105 @@ export const getAllTenders = catchError(async (req, res, next) => {
   });
 });
 
+export const getAllTendersForWebsite = catchError(async (req, res, next) => {
+  console.log("query", req.query);
+  let query = Tender.find({ isDeleted: false });
+
+  if (req.body.countryIds && req.body.countryIds.length > 0) {
+    query = query.find({
+      country: {
+        $in: req.body.countryIds.map((id) => new mongoose.Types.ObjectId(id)),
+      },
+    });
+  }
+
+  const featuresForCount = new APIFeatures(query.clone(), req.query)
+    .search()
+    .filter();
+
+  const filteredCount = await featuresForCount.query.countDocuments();
+  const page = req.query.page * 1 || 1;
+  const limit = req.query.limit * 1 || 10;
+  const skip = (page - 1) * limit;
+
+  const features = new APIFeatures(
+    query
+      .select(
+        "name_ar name_en tenderNumber createdAt closingDate mainField subField country"
+      )
+      .populate("mainField", "name_ar name_en")
+      .populate("subField", "name_ar name_en")
+      .populate("country", "name_ar name_en"),
+    req.query
+  )
+    .search()
+    .filter()
+    .sort()
+    .limitFields()
+    .paginate();
+
+  const tenders = await features.query.lean();
+
+  res.status(200).json({
+    data: tenders,
+    totalCount: filteredCount,
+    pageCount: Math.ceil(filteredCount / (req.query.limit || 10)),
+    skip,
+  });
+});
+
+export const getTendersByAdvertiser = catchError(async (req, res, next) => {
+  const { advertiserId, page = 1, limit = 10, search } = req.query;
+
+  if (!advertiserId) {
+    return next(new AppError("معرف المعلن مطلوب", 400));
+  }
+
+  const objectId = new mongoose.Types.ObjectId(advertiserId);
+
+  const filterConditions = {
+    isDeleted: false,
+    $or: [{ mainAdvertiser: objectId }, { subAdvertiser: objectId }],
+  };
+
+  if (search && search.trim() !== "") {
+    const searchRegex = new RegExp(search, "i");
+    filterConditions.$and = [
+      {
+        $or: [
+          { name_ar: searchRegex },
+          { name_en: searchRegex },
+          { tenderNumber: searchRegex },
+        ],
+      },
+    ];
+  }
+
+  let query = Tender.find(filterConditions);
+
+  const count = await query.clone().countDocuments();
+
+  const tenders = await query
+    .skip((page - 1) * limit)
+    .limit(Number(limit))
+    .populate("mainField", "name_ar name_en")
+    .populate("subField", "name_ar name_en")
+    .populate("country", "name_ar name_en")
+    .populate("mainAdvertiser", "name_ar name_en")
+    .populate("subAdvertiser", "name_ar name_en")
+    .select(
+      "name_ar name_en tenderNumber createdAt closingDate mainField subField country mainAdvertiser subAdvertiser"
+    )
+    .lean();
+
+  res.status(200).json({
+    data: tenders,
+    totalCount: count,
+    pageCount: Math.ceil(count / limit),
+    skip: (page - 1) * limit,
+  });
+});
+
 export const getTenderById = catchError(async (req, res, next) => {
   const { id } = req.params;
   if (!mongoose.isValidObjectId(id)) {
@@ -57,10 +157,12 @@ export const getTenderById = catchError(async (req, res, next) => {
   }
 
   const tender = await Tender.findById(id)
-    .populate("country", "name_ar name_en")
-    .populate("mainField", "name_ar name_en")
-    .populate("subField", "name_ar name_en")
-    .populate("advertiser", "phone email address")
+    .populate("country", "name_ar name_en ")
+    .populate("mainField", "name_ar name_en ")
+    .populate("subField", "name_ar name_en ")
+    .populate("mainAdvertiser")
+    .populate("subAdvertiser")
+    .populate("currency")
     .lean();
 
   if (!tender) {
@@ -77,6 +179,64 @@ export const getTenderById = catchError(async (req, res, next) => {
   res.status(200).json({ data: tenderWithImageUrl });
 });
 
+export const getTendersBySubField = catchError(async (req, res, next) => {
+  const { subFieldId } = req.params;
+
+  if (!mongoose.isValidObjectId(subFieldId)) {
+    return next(new AppError("معرّف المجال الفرعي غير صالح", 400));
+  }
+
+  const tenders = await Tender.find({ subField: subFieldId, isDeleted: false })
+    .select(
+      "name_ar name_en tenderNumber createdAt closingDate mainField subField"
+    )
+    .populate("mainField", "name_ar name_en")
+    .populate("subField", "name_ar name_en")
+    .lean();
+
+  if (!tenders.length) {
+    return res
+      .status(404)
+      .json({ message: "لا توجد مناقصات تحت هذا المجال الفرعي" });
+  }
+
+  res.status(200).json({
+    data: tenders,
+    count: tenders.length,
+  });
+});
+
+export const getTendersByAdvertisers = catchError(async (req, res, next) => {
+  const { mainAdvertiserId, subAdvertiserId } = req.query;
+  const filter = { isDeleted: false };
+
+  if (mainAdvertiserId && mongoose.isValidObjectId(mainAdvertiserId)) {
+    filter.mainAdvertiser = mainAdvertiserId;
+  }
+  if (subAdvertiserId && mongoose.isValidObjectId(subAdvertiserId)) {
+    filter.subAdvertiser = subAdvertiserId;
+  }
+
+  const tenders = await Tender.find(filter)
+    .populate("mainAdvertiser", "name_ar name_en")
+    .populate("subAdvertiser", "name_ar name_en")
+    .populate("mainField", "name_ar name_en")
+    .populate("subField", "name_ar name_en")
+    .populate("country", "name_ar name_en")
+    .lean();
+
+  const baseUrl = `${req.protocol}://${req.get("host")}`;
+  const tendersWithImageUrls = tenders.map((tender) => ({
+    ...tender,
+    fileUrl: tender.fileUrl ? `${baseUrl}${tender.fileUrl}` : null,
+  }));
+
+  res.status(200).json({
+    data: tendersWithImageUrls,
+    count: tendersWithImageUrls.length,
+  });
+});
+
 const uploadDir = path.resolve("uploads", "tenders");
 
 export const addTender = catchError(async (req, res, next) => {
@@ -91,7 +251,8 @@ export const addTender = catchError(async (req, res, next) => {
     mainField,
     subField,
     province,
-    advertiser,
+    mainAdvertiser,
+    subAdvertiser,
     closingDate,
     documentPrice,
     guaranteeAmount,
@@ -162,7 +323,8 @@ export const addTender = catchError(async (req, res, next) => {
     mainField,
     subField,
     province,
-    advertiser,
+    mainAdvertiser,
+    subAdvertiser,
     closingDate,
     documentPrice,
     guaranteeAmount,
@@ -197,7 +359,8 @@ export const updateTender = catchError(async (req, res, next) => {
     "mainField",
     "subField",
     "province",
-    "advertiser",
+    "mainAdvertiser",
+    "subAdvertiser",
     "closingDate",
     "documentPrice",
     "guaranteeAmount",

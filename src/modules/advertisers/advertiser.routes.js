@@ -3,10 +3,16 @@ import { validation } from "../../middleware/validation.js";
 import {
   addAdvertiser,
   deleteAdvertiser,
-  getAllAdvertisers,
+  getMainAdvertisers,
   updateAdvertiser,
+  getSubAdvertisersByParentId,
+  getAllAdvertisersGrouped,
 } from "./advertiser.controller.js";
-import { protect, restrictTo } from "../../middleware/authMiddleware.js";
+import {
+  protect,
+  restrictTo,
+  restrictToSubscription,
+} from "../../middleware/authMiddleware.js";
 import {
   advertiserValidation,
   updateAdvertiserValidation,
@@ -18,8 +24,24 @@ advertiserRoutes.get(
   "/get-all-advertisers",
   protect,
   restrictTo("admin"),
-  getAllAdvertisers
+  getMainAdvertisers
 );
+
+advertiserRoutes.get(
+  "/get-all-advertisers-group",
+  protect,
+  // restrictTo("admin"),
+  restrictToSubscription,
+  getAllAdvertisersGrouped
+);
+
+advertiserRoutes.get(
+  "/get-sub-advertisers/:id",
+  protect,
+  restrictTo("admin"),
+  getSubAdvertisersByParentId
+);
+
 advertiserRoutes.post(
   "/add-advertiser",
   protect,

@@ -4,6 +4,8 @@
 //     this.queryString = queryString;
 //   }
 
+import mongoose from "mongoose";
+
 //   filter() {
 //     const queryObj = { ...this.queryString };
 //     const excludeFields = ["page", "sort", "limit", "fields", "search"];
@@ -12,67 +14,77 @@
 //     let customQuery = {};
 
 //     if (queryObj.addingFrom || queryObj.addingTo) {
-//       customQuery.createdAt = {};
+//       let fromDate = queryObj.addingFrom ? new Date(queryObj.addingFrom) : null;
+//       let toDate = queryObj.addingTo ? new Date(queryObj.addingTo) : null;
 
-//       if (queryObj.addingFrom) {
-//         const fromDate = new Date(queryObj.addingFrom);
-//         if (isNaN(fromDate)) {
-//           throw new Error("Invalid addingFrom date format");
-//         }
+//       if (fromDate && isNaN(fromDate)) {
+//         throw new Error("Invalid addingFrom date format");
+//       }
+//       if (toDate && isNaN(toDate)) {
+//         throw new Error("Invalid addingTo date format");
+//       }
+
+//       if (fromDate && toDate && fromDate > toDate) {
+//         [fromDate, toDate] = [toDate, fromDate];
+//       }
+
+//       if (fromDate) {
 //         fromDate.setHours(0, 0, 0, 0);
-//         customQuery.createdAt.$gte = fromDate;
+//         customQuery.createdAt = { $gte: fromDate };
 //       }
-
-//       if (queryObj.addingTo) {
-//         const toDate = new Date(queryObj.addingTo);
-//         if (isNaN(toDate)) {
-//           throw new Error("Invalid addingTo date format");
-//         }
+//       if (toDate) {
 //         toDate.setHours(23, 59, 59, 999);
-//         customQuery.createdAt.$lte = toDate;
+//         customQuery.createdAt = {
+//           ...(customQuery.createdAt || {}),
+//           $lte: toDate,
+//         };
 //       }
-
-//       if (
-//         customQuery.createdAt.$gte &&
-//         customQuery.createdAt.$lte &&
-//         customQuery.createdAt.$gte > customQuery.createdAt.$lte
-//       ) {
-//         const temp = customQuery.createdAt.$gte;
-//         customQuery.createdAt.$gte = customQuery.createdAt.$lte;
-//         customQuery.createdAt.$lte = temp;
-//       }
-
-//       console.log("Date filter:", customQuery.createdAt);
 
 //       delete queryObj.addingFrom;
 //       delete queryObj.addingTo;
 //     }
 
+//     // ✅ فلترة `subscriptionPaymentDate`
 //     if (queryObj.startDate || queryObj.endDate) {
+//       let startDate = queryObj.startDate ? new Date(queryObj.startDate) : null;
+//       let endDate = queryObj.endDate ? new Date(queryObj.endDate) : null;
+
+//       if (startDate && isNaN(startDate)) {
+//         throw new Error("Invalid startDate format");
+//       }
+//       if (endDate && isNaN(endDate)) {
+//         throw new Error("Invalid endDate format");
+//       }
+
+//       if (startDate && endDate && startDate > endDate) {
+//         [startDate, endDate] = [endDate, startDate];
+//       }
+
 //       customQuery.subscriptionPaymentDate = {};
-//       if (queryObj.startDate) {
-//         const startDate = new Date(queryObj.startDate);
+//       if (startDate) {
 //         startDate.setHours(0, 0, 0, 0);
 //         customQuery.subscriptionPaymentDate.$gte = startDate;
 //       }
-//       if (queryObj.endDate) {
-//         const endDate = new Date(queryObj.endDate);
+//       if (endDate) {
 //         endDate.setHours(23, 59, 59, 999);
 //         customQuery.subscriptionPaymentDate.$lte = endDate;
 //       }
+
 //       delete queryObj.startDate;
 //       delete queryObj.endDate;
 //     }
 
+//     // ✅ فلترة حالة الاشتراك
 //     if (queryObj.subscriptionStatus) {
 //       customQuery.subscriptionStatus = queryObj.subscriptionStatus;
 //     }
 
+//     // ✅ فلترة الدولة
 //     if (queryObj.country) {
 //       customQuery.country = queryObj.country;
 //     }
 
-//     // دمج الـ customQuery مع الـ queryObj
+//     // دمج `customQuery` مع `queryObj`
 //     Object.keys(queryObj).forEach((key) => {
 //       customQuery[key] = queryObj[key];
 //     });
@@ -94,6 +106,8 @@
 //           { tenderNumber: searchRegex },
 //           { phone: searchRegex },
 //           { address: searchRegex },
+//           { address_ar: searchRegex },
+//           { address_en: searchRegex },
 //         ],
 //       });
 //     }
@@ -144,7 +158,6 @@ class APIFeatures {
 
     let customQuery = {};
 
-    // ✅ التعامل مع فلترة التواريخ (بغض النظر عن الترتيب)
     if (queryObj.addingFrom || queryObj.addingTo) {
       let fromDate = queryObj.addingFrom ? new Date(queryObj.addingFrom) : null;
       let toDate = queryObj.addingTo ? new Date(queryObj.addingTo) : null;
@@ -157,7 +170,6 @@ class APIFeatures {
       }
 
       if (fromDate && toDate && fromDate > toDate) {
-        // إذا كان `addingFrom` أكبر من `addingTo` يتم تبديلهما
         [fromDate, toDate] = [toDate, fromDate];
       }
 
@@ -173,13 +185,10 @@ class APIFeatures {
         };
       }
 
-      console.log("📌 تاريخ البحث:", customQuery.createdAt);
-
       delete queryObj.addingFrom;
       delete queryObj.addingTo;
     }
 
-    // ✅ فلترة `subscriptionPaymentDate`
     if (queryObj.startDate || queryObj.endDate) {
       let startDate = queryObj.startDate ? new Date(queryObj.startDate) : null;
       let endDate = queryObj.endDate ? new Date(queryObj.endDate) : null;
@@ -209,22 +218,41 @@ class APIFeatures {
       delete queryObj.endDate;
     }
 
-    // ✅ فلترة حالة الاشتراك
     if (queryObj.subscriptionStatus) {
       customQuery.subscriptionStatus = queryObj.subscriptionStatus;
     }
 
-    // ✅ فلترة الدولة
-    if (queryObj.country) {
-      customQuery.country = queryObj.country;
+    // فلترة الدولة (countryIds)
+    if (queryObj.countryIds) {
+      const ids = Array.isArray(queryObj.countryIds)
+        ? queryObj.countryIds
+        : [queryObj.countryIds];
+
+      const objectIds = ids.map((id) => new mongoose.Types.ObjectId(id));
+
+      customQuery.country = { $in: objectIds };
+      delete queryObj.countryIds;
     }
 
-    // دمج `customQuery` مع `queryObj`
+    if (queryObj.subFieldId) {
+      customQuery.subField = queryObj.subFieldId;
+      delete queryObj.subFieldId;
+    }
+    // mainField
+    if (queryObj.mainFieldId) {
+      customQuery.mainField = queryObj.mainFieldId;
+      delete queryObj.mainFieldId;
+    }
+    // advertiser
+    if (queryObj.advertiserId) {
+      customQuery.advertiser = queryObj.advertiserId;
+      delete queryObj.advertiserId;
+    }
+
     Object.keys(queryObj).forEach((key) => {
       customQuery[key] = queryObj[key];
     });
 
-    // تطبيق الفلترة مباشرة
     this.query = this.query.find(customQuery);
     return this;
   }
@@ -241,6 +269,8 @@ class APIFeatures {
           { tenderNumber: searchRegex },
           { phone: searchRegex },
           { address: searchRegex },
+          { address_ar: searchRegex },
+          { address_en: searchRegex },
         ],
       });
     }

@@ -21,6 +21,7 @@ import fieldRoutes from "./src/modules/fields/fields.routes.js";
 import siteInfoRoutes from "./src/modules/site_info/siteInfo.routes.js";
 import tenderRoutes from "./src/modules/Tenders/tenders.routes.js";
 import currencyRoutes from "./src/modules/currency/currency.routes.js";
+import messagesRoutes from "./src/modules/messages/message.routes.js";
 
 dotenv.config();
 const app = express();
@@ -30,6 +31,7 @@ dbConnect();
 const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",") || [
   "http://localhost:3000",
   "http://localhost:5173",
+  "http://localhost:5174",
   "https://tender-day-backend.vercel.app",
 ];
 
@@ -51,9 +53,9 @@ const corsOptions = {
 };
 
 const limiter = rateLimit({
-  windowMs: 5 * 60 * 1000,
-  max: 300,
-  message: "Too many requests from this IP, please try again later.",
+  windowMs: 3 * 60 * 1000,
+  max: 1000,
+  message: "عدد كبير من الطلبات، حاول مرة أخرى لاحقًا.",
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -78,16 +80,16 @@ app.use(`/api/v1/clients`, clientRoutes);
 app.use(`/api/v1/countries`, countryRoutes);
 app.use(`/api/v1/advertisers`, advertiserRoutes);
 app.use(`/api/v1/fields`, fieldRoutes);
+app.use(`/api/v1/messages`, messagesRoutes);
 app.use(`/api/v1/site-info`, siteInfoRoutes);
 app.use(`/api/v1/tenders`, tenderRoutes);
 app.use(`/api/v1/currencies`, currencyRoutes);
-// app.use(
-//   "/uploads/tenders",
-//   express.static(path.join(__dirname, "uploads/tenders"))
-// );
 
 app.use("/uploads/tenders", express.static(path.resolve("uploads", "tenders")));
-
+app.use(
+  "/uploads/siteInfo",
+  express.static(path.resolve("uploads", "siteInfo"))
+);
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "mySecretKey",

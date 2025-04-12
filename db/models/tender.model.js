@@ -51,10 +51,15 @@ const tenderSchema = new mongoose.Schema(
       type: String,
       required: [true, "يجب إدخال المحافظة"],
     },
-    advertiser: {
+    mainAdvertiser: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Advertiser",
-      required: [true, "يجب اختيار الجهة المعلنة"],
+      required: [true, "يجب اختيار الجهة المعلنة الرئيسية"],
+    },
+    subAdvertiser: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Advertiser",
+      required: false,
     },
     closingDate: {
       type: Date,

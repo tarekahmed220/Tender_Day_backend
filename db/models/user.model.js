@@ -35,12 +35,30 @@ const userSchema = new Schema(
       type: Boolean,
       default: true,
     },
+    phone: {
+      type: String,
+      required: [true, "رقم الهاتف مطلوب"],
+      trim: true,
+      match: [
+        /^(\+?\d{6,15})$/,
+        "رقم الهاتف غير صالح. يجب أن يحتوي على 6 إلى 15 رقم، مع أو بدون رمز الدولة.",
+      ],
+      unique: true,
+    },
 
     country: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Country",
-      required: [true, "يجب اختيار الدولة"],
+      type: String,
+      required: [true, "يرجى إدخال الدولة"],
+      trim: true,
     },
+
+    subscriptionCountries: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Country",
+        required: true,
+      },
+    ],
 
     subscriptionStatus: {
       type: String,

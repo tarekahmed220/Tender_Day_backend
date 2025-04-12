@@ -39,7 +39,16 @@ const siteInfoSchema = new mongoose.Schema(
       trim: true,
       default: "",
     },
+    mainImage: {
+      type: String,
+      default: "",
+    },
+    brands: {
+      type: [String],
+      default: [],
+    },
   },
+
   { versionKey: false }
 );
 

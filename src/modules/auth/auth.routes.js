@@ -1,26 +1,44 @@
 import express from "express";
+import { protect, restrictTo } from "../../middleware/authMiddleware.js";
 import { validation } from "../../middleware/validation.js";
 import {
-  userLoginSchema,
-  registerValidation,
-  emailValidationSchema,
-  passwordValidationSchema,
-} from "./auth.validation.js";
-import {
-  signinUser,
-  register,
-  logout,
+  createClientByAdmin,
   getAdminData,
+  getClientData,
+  logout,
+  registerClient,
   signinAdmin,
+  signinUser,
   updateAdminEmail,
   updateAdminPassword,
+  updateClientPassword,
 } from "./auth.controller.js";
-import { protect, restrictTo } from "../../middleware/authMiddleware.js";
+import {
+  emailValidationSchema,
+  passwordValidationSchema,
+  registerByAdminValidation,
+  registerClientValidation,
+  userLoginSchema,
+} from "./auth.validation.js";
 
 const userRoutes = express.Router();
+// register client by self
+userRoutes.post(
+  "/register",
+  validation(registerClientValidation),
+  registerClient
+);
 
+// create client by admin
+userRoutes.post(
+  "/admin/users",
+  protect,
+  restrictTo("admin"),
+  validation(registerByAdminValidation),
+  createClientByAdmin
+);
 userRoutes.get("/me", protect, restrictTo("admin"), getAdminData);
-userRoutes.post("/register", validation(registerValidation), register);
+userRoutes.get("/client/me", protect, getClientData);
 userRoutes.post("/signin", validation(userLoginSchema), signinUser);
 userRoutes.post("/admin/signin", validation(userLoginSchema), signinAdmin);
 userRoutes.post("/logout", protect, logout);
@@ -37,6 +55,12 @@ userRoutes.post(
   restrictTo("admin"),
   validation(passwordValidationSchema),
   updateAdminPassword
+);
+userRoutes.post(
+  "/password-client",
+  protect,
+  validation(passwordValidationSchema),
+  updateClientPassword
 );
 
 export default userRoutes;

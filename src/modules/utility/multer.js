@@ -21,6 +21,8 @@ export const upload = multer({
       "image/png",
       "application/pdf",
       "application/zip",
+      "application/x-zip-compressed",
+      "multipart/x-zip",
     ];
     if (!allowedTypes.includes(file.mimetype)) {
       return cb(new Error("صيغة الملف غير مدعومة"), false);

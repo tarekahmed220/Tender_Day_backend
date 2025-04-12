@@ -47,8 +47,12 @@ export const addTenderValidation = Joi.object({
     "string.max": "يجب ألا يتجاوز اسم المحافظة 100 حرف",
   }),
 
-  advertiser: Joi.string().trim().required().messages({
-    "string.empty": "يجب اختيار الجهة المعلنة",
+  mainAdvertiser: Joi.string().trim().required().messages({
+    "string.empty": "يجب اختيار الجهة المعلنة الرئيسية",
+  }),
+
+  subAdvertiser: Joi.string().trim().optional().allow("").messages({
+    "string.empty": "يجب اختيار الجهة المعلنة الفرعية",
   }),
 
   closingDate: Joi.date().iso().required().messages({

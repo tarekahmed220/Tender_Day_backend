@@ -2,6 +2,16 @@ import mongoose from "mongoose";
 
 const advertiserSchema = new mongoose.Schema(
   {
+    name_ar: {
+      type: String,
+      required: [true, "يرجى إدخال اسم المُعلن بالعربية"],
+      trim: true,
+    },
+    name_en: {
+      type: String,
+      required: [true, "يرجى إدخال اسم المُعلن بالإنجليزية"],
+      trim: true,
+    },
     phone: {
       type: String,
       required: [true, "من فضلك قم بإدخال رقم الموبايل"],
@@ -15,18 +25,34 @@ const advertiserSchema = new mongoose.Schema(
       trim: true,
       match: [
         /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/,
-        "من فضلك قم بإدخال بريد صالح",
+        "من فضلك قم بإدخال بريد إلكتروني صالح",
       ],
       index: true,
     },
-    address: {
+    address_ar: {
       type: String,
-      required: [true, "من فضلك قم بإدخال العنوان"],
+      required: [true, "من فضلك قم بإدخال العنوان بالعربية"],
       trim: true,
     },
-    isDeleted: { type: Boolean, default: false },
+    address_en: {
+      type: String,
+      required: [true, "من فضلك قم بإدخال العنوان بالإنجليزية"],
+      trim: true,
+    },
+    parent: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Advertiser",
+      default: null,
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
   },
-  { versionKey: false }
+  {
+    timestamps: true,
+    versionKey: false,
+  }
 );
 
 const advertiserModel = mongoose.model("Advertiser", advertiserSchema);
