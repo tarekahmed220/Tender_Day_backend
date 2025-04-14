@@ -238,10 +238,19 @@ class APIFeatures {
       customQuery.subField = queryObj.subFieldId;
       delete queryObj.subFieldId;
     }
+    if (queryObj.country) {
+      customQuery.country = queryObj.country;
+      delete queryObj.country;
+    }
     // mainField
     if (queryObj.mainFieldId) {
       customQuery.mainField = queryObj.mainFieldId;
       delete queryObj.mainFieldId;
+    }
+    // mainAdvertiser
+    if (queryObj.mainAdvertiser) {
+      customQuery.mainAdvertiser = queryObj.mainAdvertiser;
+      delete queryObj.mainAdvertiser;
     }
     // advertiser
     if (queryObj.advertiserId) {

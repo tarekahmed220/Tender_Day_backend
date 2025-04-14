@@ -9,9 +9,6 @@ const getAllClients = catchError(async (req, res, next) => {
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 10;
   const skip = (page - 1) * limit;
-
-  console.log("limit:", limit, "skip:", skip);
-
   const filteredCountFeatures = new APIFeatures(
     userModel.find({ isDeleted: false, role: "client" }),
     req.query
@@ -21,10 +18,7 @@ const getAllClients = catchError(async (req, res, next) => {
   const totalCount = await filteredCountFeatures.query.countDocuments();
 
   const features = new APIFeatures(
-    userModel
-      .find({ isDeleted: false, role: "client" })
-      .select("-password")
-      .populate("country"),
+    userModel.find({ isDeleted: false, role: "client" }).select("-password"),
     req.query
   )
     .search()
@@ -32,6 +26,10 @@ const getAllClients = catchError(async (req, res, next) => {
     .sort()
     .limitFields()
     .paginate();
+
+  features.query = features.query
+    .populate("country")
+    .populate("subscriptionCountries");
 
   const clients = await features.query;
 

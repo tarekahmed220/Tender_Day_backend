@@ -1,34 +1,77 @@
 import fieldModel from "../../../db/models/fields.model.js";
 import catchError from "../../middleware/handleError.js";
 import AppError from "../utility/appError.js";
+import APIFeatures from "../utility/APIFeatures.js";
+
+// export const getAllFields = catchError(async (req, res, next) => {
+//   const page = Number(req.query.page) || 1;
+//   const limit = Number(req.query.limit) || 10;
+//   const skip = (page - 1) * limit;
+
+//   const fields = await fieldModel
+//     .find({ isDeleted: false })
+//     .populate("parent", "name_ar name_en")
+//     .lean();
+
+//   const groupedFields = fields.reduce((acc, field) => {
+//     if (!field.parent) {
+//       const subFields = fields.filter(
+//         (f) => f.parent && f.parent._id.equals(field._id)
+//       );
+
+//       acc.push({
+//         ...field,
+//         subFields,
+//         subFieldsCount: subFields.length,
+//       });
+//     }
+
+//     return acc;
+//   }, []);
+//   const totalCount = groupedFields.length;
+//   const paginatedFields = groupedFields.slice(skip, skip + limit);
+//   res.status(200).json({ data: paginatedFields, totalCount, skip });
+// });
 
 export const getAllFields = catchError(async (req, res, next) => {
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 10;
   const skip = (page - 1) * limit;
 
-  const fields = await fieldModel
-    .find({ isDeleted: false })
-    .populate("parent", "name_ar name_en")
-    .lean();
+  const features = new APIFeatures(
+    fieldModel.find({ isDeleted: false }).populate("parent", "name_ar name_en"),
+    req.query
+  )
+    .search()
+    .filter()
+    .sort()
+    .limitFields();
 
-  const groupedFields = fields.reduce((acc, field) => {
+  const allFields = await features.query.lean();
+
+  const groupedFields = allFields.reduce((acc, field) => {
     if (!field.parent) {
-      const subFields = fields.filter(
+      const subFields = allFields.filter(
         (f) => f.parent && f.parent._id.equals(field._id)
       );
 
       acc.push({
         ...field,
-        subFields,
+        subFields: subFields.sort((a, b) => a.name_ar.localeCompare(b.name_ar)),
         subFieldsCount: subFields.length,
       });
     }
 
     return acc;
   }, []);
+
   const totalCount = groupedFields.length;
   const paginatedFields = groupedFields.slice(skip, skip + limit);
+
+  if (!paginatedFields.length) {
+    return next(new AppError("لا توجد مجالات متاحة", 404));
+  }
+
   res.status(200).json({ data: paginatedFields, totalCount, skip });
 });
 
