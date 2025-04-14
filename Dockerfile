@@ -12,7 +12,7 @@ RUN npm install
 COPY . .
 
 # البورت اللي التطبيق بيشتغل عليه
-EXPOSE 3000
+EXPOSE 5500
 
 # أمر التشغيل
 CMD ["node", "app.js"]
