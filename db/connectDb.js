@@ -11,8 +11,7 @@ export const dbConnect = () => {
   }
 
   mongoose
-    .connect(uri)
-    // .connect(uri, { dbName: "TendersDay_Live" })
+    .connect(uri, { dbName: "tender_day" })
     .then(() => console.log("Connected to MongoDB"))
     .catch((e) => console.error("Connection error", e));
 };
