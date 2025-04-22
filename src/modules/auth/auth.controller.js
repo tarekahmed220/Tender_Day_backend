@@ -151,7 +151,7 @@ const signinUser = catchError(async (req, res, next) => {
     );
   }
 
-  const token = generateToken(req, res, targetUser._id);
+  const token = generateToken(res, targetUser._id);
   res.json({
     message: "تم تسجيل الدخول بنجاح",
     token,
@@ -169,7 +169,7 @@ const signinAdmin = catchError(async (req, res, next) => {
       new AppError("البريد الإلكتروني أو كلمة المرور غير صالحة", 401)
     );
   }
-  generateToken(req, res, targetUser._id);
+  generateToken(res, targetUser._id);
   res.json({
     message: "تم تسجيل دخول الأدمن بنجاح",
   });
