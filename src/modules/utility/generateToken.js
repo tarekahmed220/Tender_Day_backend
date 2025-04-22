@@ -30,7 +30,7 @@ const generateToken = (req, res, userId) => {
     // secure: process.env.NODE_ENV === "production",
     // sameSite: "lax",
     maxAge: 3 * 24 * 60 * 60 * 1000,
-    domain: "tendersday.com",
+    domain: "dashboard.tendersday.com",
     // new URL(req.header("referer")).host === "dashboard.tendersday.com"
     //   ? "dashboard.tendersday.com"
     //   : "tendersday.com",
