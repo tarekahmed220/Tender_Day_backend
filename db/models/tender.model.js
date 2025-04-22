@@ -66,11 +66,11 @@ const tenderSchema = new mongoose.Schema(
       required: [true, "يجب إدخال تاريخ الإغلاق"],
     },
     documentPrice: {
-      type: Number,
+      type: String,
       required: [true, "يجب إدخال قيمة وثائق المناقصة"],
     },
     guaranteeAmount: {
-      type: Number,
+      type: String,
       required: [true, "يجب إدخال مبلغ التأمين"],
     },
     sourceInfo: {
