@@ -176,7 +176,13 @@ const signinAdmin = catchError(async (req, res, next) => {
 });
 
 const logout = catchError(async (req, res) => {
-  res.clearCookie("token");
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+    path: "/",
+  });
+
   res.status(200).json({ message: "تم تسجيل الخروج بنجاح" });
 });
 const getAdminData = catchError(async (req, res, next) => {
