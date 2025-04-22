@@ -26,14 +26,15 @@ const generateToken = (req, res, userId) => {
   console.log("req", new URL(req.header("referer")).host);
 
   res.cookie("token", token, {
-    // httpOnly: true,
-    // secure: process.env.NODE_ENV === "production",
-    // sameSite: "lax",
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
     maxAge: 3 * 24 * 60 * 60 * 1000,
     domain: "tendersday.com",
-    // new URL(req.header("referer")).host === "dashboard.tendersday.com"
-    //   ? "dashboard.tendersday.com"
-    //   : "tendersday.com",
+    path:
+      new URL(req.header("referer")).host === "dashboard.tendersday.com"
+        ? "/dashboard"
+        : "/",
   });
 
   return token;
