@@ -1,19 +1,24 @@
-import catchError from "../../middleware/handleError.js";
-import SiteInfo from "../../../db/models/siteInfo.model.js";
 import fs from "fs";
 import path from "path";
+import catchError from "../../middleware/handleError.js";
+import SiteInfo from "../../../db/models/siteInfo.model.js";
+
+const baseUrl = (req) =>
+  process.env.NODE_ENV === "production"
+    ? "https://api.tendersday.com"
+    : `${req.protocol}://${req.get("host")}`;
 
 export const getSiteInfo = catchError(async (req, res, next) => {
   const siteInfo = (await SiteInfo.findOne())?.toObject() || {};
 
-  const baseUrl = `${req.protocol}://${req.get("host")}`;
-
   if (siteInfo.mainImage)
-    siteInfo.mainImage = `${baseUrl}/uploads/siteInfo/${siteInfo.mainImage}`;
+    siteInfo.mainImage = `${baseUrl(req)}/uploads/siteInfo/${
+      siteInfo.mainImage
+    }`;
 
   if (Array.isArray(siteInfo.brands)) {
     siteInfo.brands = siteInfo.brands.map(
-      (logo) => `${baseUrl}/uploads/siteInfo/${logo}`
+      (logo) => `${baseUrl(req)}/uploads/siteInfo/${logo}`
     );
   }
 
@@ -54,7 +59,7 @@ export const uploadMainImage = catchError(async (req, res, next) => {
   if (!siteInfo) siteInfo = new SiteInfo();
 
   if (siteInfo.mainImage) {
-    const oldPath = path.resolve(`uploads/${siteInfo.mainImage}`);
+    const oldPath = path.resolve("uploads", "siteInfo", siteInfo.mainImage);
     if (fs.existsSync(oldPath)) {
       fs.unlinkSync(oldPath);
     }
@@ -63,9 +68,10 @@ export const uploadMainImage = catchError(async (req, res, next) => {
   siteInfo.mainImage = req.file.filename;
   await siteInfo.save();
 
-  res
-    .status(200)
-    .json({ message: "تم رفع الصورة بنجاح", mainImage: siteInfo.mainImage });
+  res.status(200).json({
+    message: "تم رفع الصورة بنجاح",
+    mainImage: `${baseUrl(req)}/uploads/siteInfo/${siteInfo.mainImage}`,
+  });
 });
 
 export const removeMainImage = catchError(async (req, res, next) => {
@@ -98,14 +104,16 @@ export const addBrandLogo = catchError(async (req, res, next) => {
   siteInfo.brands.push(req.file.filename);
   await siteInfo.save();
 
-  res
-    .status(200)
-    .json({ message: "تم رفع الشعار بنجاح", brands: siteInfo.brands });
+  res.status(200).json({
+    message: "تم رفع الشعار بنجاح",
+    brands: siteInfo.brands.map(
+      (logo) => `${baseUrl(req)}/uploads/siteInfo/${logo}`
+    ),
+  });
 });
 
 export const removeBrandLogo = catchError(async (req, res, next) => {
   let { filename } = req.params;
-
   filename = filename.split("/").pop();
 
   const siteInfo = await SiteInfo.findOne();
@@ -122,7 +130,10 @@ export const removeBrandLogo = catchError(async (req, res, next) => {
   siteInfo.brands = siteInfo.brands.filter((f) => f !== filename);
   await siteInfo.save();
 
-  res
-    .status(200)
-    .json({ message: "تم حذف الشعار بنجاح", brands: siteInfo.brands });
+  res.status(200).json({
+    message: "تم حذف الشعار بنجاح",
+    brands: siteInfo.brands.map(
+      (logo) => `${baseUrl(req)}/uploads/siteInfo/${logo}`
+    ),
+  });
 });
