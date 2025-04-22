@@ -5,19 +5,15 @@ const generateToken = (res, userId) => {
     expiresIn: "3d",
   });
 
-  const domain =
-    process.env.NODE_ENV === "production"
-      ? res.req.hostname.includes("dashboard")
-        ? "dashboard.tendersday.com"
-        : "tendersday.com"
-      : undefined;
-
   res.cookie("token", token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+    sameSite: "None",
     maxAge: 3 * 24 * 60 * 60 * 1000,
-    domain,
+    domain:
+      req.hostname === "dashboard.tendersday.com"
+        ? "dashboard.tendersday.com"
+        : "tendersday.com",
   });
 
   return token;
