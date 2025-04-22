@@ -30,10 +30,10 @@ const generateToken = (req, res, userId) => {
     // secure: process.env.NODE_ENV === "production",
     // sameSite: "lax",
     maxAge: 3 * 24 * 60 * 60 * 1000,
-    domain:
-      new URL(req.header("referer")).host === "dashboard.tendersday.com"
-        ? "dashboard.tendersday.com"
-        : "tendersday.com",
+    domain: "tendersday.com",
+    // new URL(req.header("referer")).host === "dashboard.tendersday.com"
+    //   ? "dashboard.tendersday.com"
+    //   : "tendersday.com",
   });
 
   return token;
