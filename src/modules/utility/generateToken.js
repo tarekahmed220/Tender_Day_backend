@@ -23,7 +23,7 @@ const generateToken = (req, res, userId) => {
   const token = jwt.sign({ id: userId }, process.env.JWT_SECRET, {
     expiresIn: "3d",
   });
-  console.log("req", req.hostname);
+  console.log("req", req.header("referer"));
 
   res.cookie("token", token, {
     httpOnly: true,
@@ -31,7 +31,7 @@ const generateToken = (req, res, userId) => {
     sameSite: "None",
     maxAge: 3 * 24 * 60 * 60 * 1000,
     domain:
-      req.hostname === "dashboard.tendersday.com"
+      new URL(req.header("referer")).host === "dashboard.tendersday.com"
         ? "dashboard.tendersday.com"
         : "tendersday.com",
   });
