@@ -7,6 +7,11 @@ import APIFeatures from "../utility/APIFeatures.js";
 import AppError from "../utility/appError.js";
 import advertiserModel from "../../../db/models/advertiser.model.js";
 
+const baseUrl =
+  process.env.NODE_ENV === "production"
+    ? "https://api.tendersday.com"
+    : (req) => `${req.protocol}://${req.get("host")}`;
+
 export const getAllTenders = catchError(async (req, res, next) => {
   const featuresForCount = new APIFeatures(
     Tender.find({ isDeleted: false }),
@@ -40,7 +45,11 @@ export const getAllTenders = catchError(async (req, res, next) => {
   const baseUrl = `${req.protocol}://${req.get("host")}`;
   const tendersWithImageUrls = tenders.map((tender) => ({
     ...tender,
-    fileUrl: tender.fileUrl ? `${baseUrl}${tender.fileUrl}` : null,
+    fileUrl: tender.fileUrl
+      ? `${typeof baseUrl === "function" ? baseUrl(req) : baseUrl}${
+          tender.fileUrl
+        }`
+      : null,
   }));
 
   res.status(200).json({
@@ -173,7 +182,11 @@ export const getTenderById = catchError(async (req, res, next) => {
 
   const tenderWithImageUrl = {
     ...tender,
-    fileUrl: tender.fileUrl ? `${baseUrl}${tender.fileUrl}` : null,
+    fileUrl: tender.fileUrl
+      ? `${typeof baseUrl === "function" ? baseUrl(req) : baseUrl}${
+          tender.fileUrl
+        }`
+      : null,
   };
 
   res.status(200).json({ data: tenderWithImageUrl });
@@ -228,7 +241,11 @@ export const getTendersByAdvertisers = catchError(async (req, res, next) => {
   const baseUrl = `${req.protocol}://${req.get("host")}`;
   const tendersWithImageUrls = tenders.map((tender) => ({
     ...tender,
-    fileUrl: tender.fileUrl ? `${baseUrl}${tender.fileUrl}` : null,
+    fileUrl: tender.fileUrl
+      ? `${typeof baseUrl === "function" ? baseUrl(req) : baseUrl}${
+          tender.fileUrl
+        }`
+      : null,
   }));
 
   res.status(200).json({
