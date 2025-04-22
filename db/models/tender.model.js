@@ -25,7 +25,6 @@ const tenderSchema = new mongoose.Schema(
     tenderNumber: {
       type: String,
       required: [true, "يجب إدخال رقم المناقصة"],
-      unique: true,
     },
     country: {
       type: mongoose.Schema.Types.ObjectId,

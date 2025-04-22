@@ -259,41 +259,6 @@ export const addTender = catchError(async (req, res, next) => {
     sourceInfo,
   } = req.body;
 
-  const existingTender = await Tender.findOne({
-    $or: [{ tenderNumber }],
-  });
-
-  if (existingTender) {
-    if (!existingTender.isDeleted) {
-      return next(new AppError("رقم المناقصة موجود بالفعل", 400));
-    } else {
-      Object.assign(existingTender, req.body);
-      if (req.file) {
-        const fileName = `${Date.now()}-${Math.round(
-          Math.random() * 1e9
-        )}${path.extname(req.file.originalname)}`;
-        const filePath = path.join(uploadDir, fileName);
-
-        if (!fs.existsSync(uploadDir)) {
-          fs.mkdirSync(uploadDir, { recursive: true });
-        }
-
-        try {
-          fs.writeFileSync(filePath, req.file.buffer);
-          existingTender.fileUrl = `/uploads/tenders/${fileName}`;
-        } catch (error) {
-          return next(new AppError(`فشل في حفظ الملف: ${error.message}`, 500));
-        }
-      }
-      existingTender.isDeleted = false;
-      await existingTender.save();
-      return res.status(200).json({
-        message: "تم استرجاع المناقصة المحذوفة بنجاح",
-        tender: existingTender,
-      });
-    }
-  }
-
   let fileUrl = null;
   if (req.file) {
     const fileName = `${Date.now()}-${Math.round(
@@ -384,7 +349,6 @@ export const updateTender = catchError(async (req, res, next) => {
     }
 
     try {
-      // 🛑 **حذف الملف القديم إذا كان موجودًا**
       if (tender.fileUrl) {
         const oldFilePath = path.join(
           "uploads",
