@@ -60,16 +60,12 @@ export const addTenderValidation = Joi.object({
     "any.required": "يجب إدخال تاريخ الإغلاق",
   }),
 
-  documentPrice: Joi.number().positive().required().messages({
-    "number.base": "يجب إدخال قيمة وثائق المناقصة كرقم",
-    "number.positive": "يجب أن تكون قيمة الوثائق أكبر من 0",
-    "any.required": "يجب إدخال قيمة وثائق المناقصة",
+  documentPrice: Joi.string().required().messages({
+    "string.empty": "يجب إدخال قيمة وثائق المناقصة",
   }),
 
-  guaranteeAmount: Joi.number().positive().required().messages({
-    "number.base": "يجب إدخال مبلغ التأمين كرقم",
-    "number.positive": "يجب أن يكون مبلغ التأمين أكبر من 0",
-    "any.required": "يجب إدخال مبلغ التأمين",
+  guaranteeAmount: Joi.string().required().messages({
+    "string.empty": "يجب إدخال مبلغ التأمين",
   }),
 
   sourceInfo: Joi.string().trim().required().messages({
