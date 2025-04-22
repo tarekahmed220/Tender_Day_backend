@@ -3,7 +3,6 @@ const generateToken = (res, userId) => {
     expiresIn: "3d",
   });
 
-  // نحدد الدومين بناءً على الهوست الحالي
   const domain =
     process.env.NODE_ENV === "production"
       ? res.req.hostname.includes("dashboard")
@@ -21,3 +20,5 @@ const generateToken = (res, userId) => {
 
   return token;
 };
+
+export default generateToken;
