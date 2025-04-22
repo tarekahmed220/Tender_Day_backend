@@ -334,9 +334,20 @@ export const updateTender = catchError(async (req, res, next) => {
 
   allowedFields.forEach((field) => {
     if (req.body[field] !== undefined) {
-      tender[field] = req.body[field];
-    } else if (field === "subAdvertiser" && req.body[field] === null) {
-      tender[field] = null;
+      // تحويل السلسلة الفارغة أو "null" إلى null لـ subAdvertiser
+      if (field === "subAdvertiser") {
+        if (
+          req.body[field] === "" ||
+          req.body[field] === "null" ||
+          req.body[field] === null
+        ) {
+          tender[field] = null;
+        } else {
+          tender[field] = req.body[field];
+        }
+      } else {
+        tender[field] = req.body[field];
+      }
     }
   });
 
@@ -363,7 +374,6 @@ export const updateTender = catchError(async (req, res, next) => {
         }
       }
 
-      // ✅ **حفظ الملف الجديد**
       fs.writeFileSync(filePath, req.file.buffer);
       tender.fileUrl = `/uploads/tenders/${fileName}`;
     } catch (error) {
