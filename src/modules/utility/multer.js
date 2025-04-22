@@ -23,6 +23,12 @@ export const upload = multer({
       "application/zip",
       "application/x-zip-compressed",
       "multipart/x-zip",
+      "application/x-7z-compressed",
+      "application/x-rar-compressed",
+      "application/vnd.rar",
+      "application/x-tar",
+      "application/gzip",
+      "application/x-bzip2",
     ];
     if (!allowedTypes.includes(file.mimetype)) {
       return cb(new Error("صيغة الملف غير مدعومة"), false);
