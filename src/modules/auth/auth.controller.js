@@ -172,11 +172,6 @@ const signinAdmin = catchError(async (req, res, next) => {
   generateToken(res, targetUser._id);
   res.json({
     message: "تم تسجيل دخول الأدمن بنجاح",
-    user: {
-      id: targetUser._id,
-      name: targetUser.name,
-      email: targetUser.email,
-    },
   });
 });
 
