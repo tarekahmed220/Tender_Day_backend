@@ -50,7 +50,7 @@ const corsOptions = {
   },
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   credentials: true,
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedOrigins: ["Content-Type", "Authorization"],
 };
 
 const limiter = rateLimit({
@@ -86,7 +86,15 @@ app.use(`/api/v1/site-info`, siteInfoRoutes);
 app.use(`/api/v1/tenders`, tenderRoutes);
 app.use(`/api/v1/currencies`, currencyRoutes);
 
-app.use("/uploads/tenders", express.static(path.resolve("uploads", "tenders")));
+// app.use("/uploads/tenders", express.static(path.resolve("uploads", "tenders")));
+app.use(
+  "/uploads/tenders",
+  (req, res, next) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    next();
+  },
+  express.static(path.resolve("uploads", "tenders"))
+);
 app.use(
   "/uploads/siteInfo",
   express.static(path.resolve("uploads", "siteInfo"))
