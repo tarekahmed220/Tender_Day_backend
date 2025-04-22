@@ -32,7 +32,7 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",") || [
   "http://localhost:3000",
   "http://localhost:5173",
   "http://localhost:5174",
-  "https://tender-day-backend.vercel.app",
+  "https://tendersday.com",
 ];
 
 const BASE_URL = process.env.BASE_URL || "/api/v1";
