@@ -87,18 +87,28 @@ app.use(`/api/v1/tenders`, tenderRoutes);
 app.use(`/api/v1/currencies`, currencyRoutes);
 
 // app.use("/uploads/tenders", express.static(path.resolve("uploads", "tenders")));
-app.use(
-  "/uploads/tenders",
-  (req, res, next) => {
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    next();
-  },
-  express.static(path.resolve("uploads", "tenders"))
-);
-app.use(
-  "/uploads/siteInfo",
-  express.static(path.resolve("uploads", "siteInfo"))
-);
+// app.use(
+//   "/uploads/siteInfo",
+//   express.static(path.resolve("uploads", "siteInfo"))
+// );
+const addStaticWithCors = (route, folder) => {
+  app.use(
+    route,
+    (req, res, next) => {
+      const origin = req.headers.origin;
+      if (allowedOrigins.includes(origin)) {
+        res.setHeader("Access-Control-Allow-Origin", origin);
+        res.setHeader("Access-Control-Allow-Methods", "GET");
+        res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+      }
+      next();
+    },
+    express.static(path.resolve("uploads", folder))
+  );
+};
+
+addStaticWithCors("/uploads/tenders", "tenders");
+addStaticWithCors("/uploads/siteInfo", "siteInfo");
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "mySecretKey",
