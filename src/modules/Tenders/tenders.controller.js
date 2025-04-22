@@ -335,6 +335,8 @@ export const updateTender = catchError(async (req, res, next) => {
   allowedFields.forEach((field) => {
     if (req.body[field] !== undefined) {
       tender[field] = req.body[field];
+    } else if (field === "subAdvertiser" && req.body[field] === null) {
+      tender[field] = null;
     }
   });
 
