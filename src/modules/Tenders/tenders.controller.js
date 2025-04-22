@@ -7,10 +7,10 @@ import APIFeatures from "../utility/APIFeatures.js";
 import AppError from "../utility/appError.js";
 import advertiserModel from "../../../db/models/advertiser.model.js";
 
-const baseUrl =
+const baseUrl = (req) =>
   process.env.NODE_ENV === "production"
     ? "https://api.tendersday.com"
-    : (req) => `${req.protocol}://${req.get("host")}`;
+    : `${req.protocol}://${req.get("host")}`;
 
 export const getAllTenders = catchError(async (req, res, next) => {
   const featuresForCount = new APIFeatures(
@@ -42,14 +42,9 @@ export const getAllTenders = catchError(async (req, res, next) => {
 
   const tenders = await features.query.lean();
 
-  const baseUrl = `${req.protocol}://${req.get("host")}`;
   const tendersWithImageUrls = tenders.map((tender) => ({
     ...tender,
-    fileUrl: tender.fileUrl
-      ? `${typeof baseUrl === "function" ? baseUrl(req) : baseUrl}${
-          tender.fileUrl
-        }`
-      : null,
+    fileUrl: tender.fileUrl ? `${baseUrl(req)}${tender.fileUrl}` : null,
   }));
 
   res.status(200).json({
@@ -178,15 +173,9 @@ export const getTenderById = catchError(async (req, res, next) => {
     return next(new AppError("المناقصة غير موجودة", 404));
   }
 
-  const baseUrl = `${req.protocol}://${req.get("host")}`;
-
   const tenderWithImageUrl = {
     ...tender,
-    fileUrl: tender.fileUrl
-      ? `${typeof baseUrl === "function" ? baseUrl(req) : baseUrl}${
-          tender.fileUrl
-        }`
-      : null,
+    fileUrl: tender.fileUrl ? `${baseUrl(req)}${tender.fileUrl}` : null,
   };
 
   res.status(200).json({ data: tenderWithImageUrl });
@@ -238,14 +227,9 @@ export const getTendersByAdvertisers = catchError(async (req, res, next) => {
     .populate("country", "name_ar name_en")
     .lean();
 
-  const baseUrl = `${req.protocol}://${req.get("host")}`;
   const tendersWithImageUrls = tenders.map((tender) => ({
     ...tender,
-    fileUrl: tender.fileUrl
-      ? `${typeof baseUrl === "function" ? baseUrl(req) : baseUrl}${
-          tender.fileUrl
-        }`
-      : null,
+    fileUrl: tender.fileUrl ? `${baseUrl(req)}${tender.fileUrl}` : null,
   }));
 
   res.status(200).json({
