@@ -169,12 +169,12 @@ const signinAdmin = catchError(async (req, res, next) => {
       new AppError("البريد الإلكتروني أو كلمة المرور غير صالحة", 401)
     );
   }
-
-  const token = generateToken(res, targetUser._id);
   res.json({
     message: "تم تسجيل دخول الأدمن بنجاح",
-    token,
-    role: "admin",
+    user: {
+      name: targetUser.name,
+      email: targetUser.email,
+    },
   });
 });
 

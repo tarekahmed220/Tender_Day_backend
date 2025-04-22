@@ -22,14 +22,12 @@ import {
 } from "./auth.validation.js";
 
 const userRoutes = express.Router();
-// register client by self
 userRoutes.post(
   "/register",
   validation(registerClientValidation),
   registerClient
 );
 
-// create client by admin
 userRoutes.post(
   "/admin/users",
   protect,
