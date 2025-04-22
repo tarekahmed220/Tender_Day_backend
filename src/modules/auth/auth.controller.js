@@ -29,6 +29,7 @@ const registerClient = catchError(async (req, res, next) => {
 
   const existingUser = await userModel.findOne({
     $or: [{ email }, { phone }],
+    isDeleted: { $ne: true },
   });
 
   if (existingUser) {
@@ -80,6 +81,7 @@ const createClientByAdmin = catchError(async (req, res, next) => {
 
   const existingUser = await userModel.findOne({
     $or: [{ email }, { phone }],
+    isDeleted: { $ne: true },
   });
 
   if (existingUser) {
