@@ -13,10 +13,8 @@ const isSubscriptionValid = (user) => {
 export const isUserSubscribedToCountry = (user, tender) => {
   if (!user.subscriptionCountries) return false;
 
-  return user.subscriptionCountries.some((country) =>
-    tender.country.some(
-      (tenderCountry) => tenderCountry._id.toString() === country.toString()
-    )
+  return user.subscriptionCountries.some(
+    (countryId) => countryId.toString() === tender.country._id.toString()
   );
 };
 

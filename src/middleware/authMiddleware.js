@@ -57,7 +57,6 @@ export const restrictToCountrySubscription = catchError(
       return next(new AppError("المناقصة غير موجودة", 404));
     }
 
-    console.log("Tender:", tender);
     if (!isUserSubscribedToCountry(req.user, tender)) {
       return next(
         new AppError("أنت غير مشترك في الدولة التي تخص هذه المناقصة", 403)
