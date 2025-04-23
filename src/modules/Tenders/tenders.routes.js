@@ -17,6 +17,7 @@ import { validation } from "../../middleware/validation.js";
 import {
   protect,
   restrictTo,
+  restrictToCountrySubscription,
   restrictToSubscription,
 } from "../../middleware/authMiddleware.js";
 import {
@@ -35,8 +36,14 @@ tenderRoutes.get(
   getTendersByAdvertiser
 );
 tenderRoutes.get("/get-tenders-by-subfield", getTendersBySubField);
-// tenderRoutes.get("/get-tenders-by-subfield", getTendersByAdvertisers);
-tenderRoutes.get("/get-tender-byid/:id", protect, getTenderById);
+
+tenderRoutes.get(
+  "/get-tender-byid/:id",
+  protect,
+  restrictToSubscription,
+  restrictToCountrySubscription,
+  getTenderById
+);
 tenderRoutes.post(
   "/add-tender",
   protect,
