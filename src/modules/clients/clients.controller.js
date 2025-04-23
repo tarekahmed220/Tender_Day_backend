@@ -35,27 +35,35 @@ const getAllClients = catchError(async (req, res, next) => {
   const clients = await features.query;
 
   const now = new Date();
+  const bulkOps = [];
+
   for (let client of clients) {
+    let newStatus;
+
     if (!client.subscriptions || client.subscriptions.length === 0) {
-      client.subscriptionStatus = "inactive";
+      newStatus = "inactive";
     } else {
-      const sortedSubscriptions = client.subscriptions.sort(
-        (a, b) => new Date(b.expiryDate) - new Date(a.expiryDate)
-      );
-      const latestSubscription = sortedSubscriptions[0];
-      if (
-        latestSubscription.expiryDate &&
-        new Date(latestSubscription.expiryDate) >= now
-      ) {
-        client.subscriptionStatus = "active";
+      const latestSubscription = client.subscriptions[0];
+      if (!latestSubscription || !latestSubscription.expiryDate) {
+        newStatus = "inactive";
       } else {
-        client.subscriptionStatus = "expired";
+        newStatus =
+          new Date(latestSubscription.expiryDate) < now ? "expired" : "active";
       }
     }
 
-    if (client.isModified("subscriptionStatus")) {
-      await client.save();
+    if (client.subscriptionStatus !== newStatus) {
+      bulkOps.push({
+        updateOne: {
+          filter: { _id: client._id },
+          update: { $set: { subscriptionStatus: newStatus } },
+        },
+      });
     }
+  }
+
+  if (bulkOps.length > 0) {
+    await userModel.bulkWrite(bulkOps);
   }
 
   if (!clients.length) {
