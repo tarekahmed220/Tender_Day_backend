@@ -9,6 +9,7 @@ const getAllClients = catchError(async (req, res, next) => {
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 10;
   const skip = (page - 1) * limit;
+
   const filteredCountFeatures = new APIFeatures(
     userModel.find({ isDeleted: false, role: "client" }),
     req.query
@@ -35,21 +36,26 @@ const getAllClients = catchError(async (req, res, next) => {
 
   const now = new Date();
   for (let client of clients) {
-    let isAnySubscriptionValid = false;
-
-    for (let subscription of client.subscriptions) {
-      if (subscription.expiryDate && new Date(subscription.expiryDate) < now) {
-        client.subscriptionStatus = "expired";
+    if (!client.subscriptions || client.subscriptions.length === 0) {
+      client.subscriptionStatus = "inactive";
+    } else {
+      const sortedSubscriptions = client.subscriptions.sort(
+        (a, b) => new Date(b.expiryDate) - new Date(a.expiryDate)
+      );
+      const latestSubscription = sortedSubscriptions[0];
+      if (
+        latestSubscription.expiryDate &&
+        new Date(latestSubscription.expiryDate) >= now
+      ) {
+        client.subscriptionStatus = "active";
       } else {
-        isAnySubscriptionValid = true;
+        client.subscriptionStatus = "expired";
       }
     }
 
-    if (isAnySubscriptionValid) {
-      client.subscriptionStatus = "active";
+    if (client.isModified("subscriptionStatus")) {
+      await client.save();
     }
-
-    await client.save();
   }
 
   if (!clients.length) {
