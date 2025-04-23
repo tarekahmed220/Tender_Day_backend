@@ -42,8 +42,13 @@ export const restrictTo = (...roles) => {
 };
 
 export const restrictToSubscription = catchError(async (req, res, next) => {
-  if (!isSubscriptionValid(req.user)) {
-    return next(new AppError("اشتراكك منتهي، من فضلك جدد الاشتراك", 403));
+  const user = req.user;
+  const isValid = await isSubscriptionValid(user);
+
+  if (!isValid) {
+    return next(
+      new AppError("اشتراكك منتهي أو غير مفعل، من فضلك جدد الاشتراك", 403)
+    );
   }
   next();
 });

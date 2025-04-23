@@ -1,13 +1,28 @@
-const isSubscriptionValid = (user) => {
+const isSubscriptionValid = async (user) => {
   if (user.role === "admin") return true;
-  if (!user.subscriptionStatus || user.subscriptionStatus !== "active")
+
+  if (!user.subscriptionStatus || user.subscriptionStatus !== "active") {
     return false;
-  if (
-    user.subscriptionExpiryDate &&
-    new Date() > new Date(user.subscriptionExpiryDate)
-  )
+  }
+
+  const now = new Date();
+
+  let isAnySubscriptionValid = false;
+
+  for (let subscription of user.subscriptions) {
+    if (subscription.expiryDate && new Date(subscription.expiryDate) < now) {
+      user.subscriptionStatus = "expired";
+    } else {
+      isAnySubscriptionValid = true;
+    }
+  }
+
+  if (isAnySubscriptionValid) {
+    return true;
+  } else {
+    await user.save();
     return false;
-  return true;
+  }
 };
 
 export const isUserSubscribedToCountry = (user, tender) => {

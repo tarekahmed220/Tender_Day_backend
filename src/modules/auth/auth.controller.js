@@ -214,6 +214,27 @@ const getClientData = catchError(async (req, res, next) => {
     .select("-password -__v -createdAt -updatedAt -isDeleted")
     .populate("subscriptionCountries", "name_ar name_en");
 
+  if (!user) {
+    return next(new AppError("المستخدم غير موجود", 404));
+  }
+
+  const now = new Date();
+  let isAnySubscriptionValid = false;
+
+  for (let subscription of user.subscriptions) {
+    if (subscription.expiryDate && new Date(subscription.expiryDate) < now) {
+      user.subscriptionStatus = "expired";
+    } else {
+      isAnySubscriptionValid = true;
+    }
+  }
+
+  if (isAnySubscriptionValid) {
+    user.subscriptionStatus = "active";
+  }
+
+  await user.save();
+
   res.status(200).json({
     success: true,
     user,

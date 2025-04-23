@@ -33,6 +33,25 @@ const getAllClients = catchError(async (req, res, next) => {
 
   const clients = await features.query;
 
+  const now = new Date();
+  for (let client of clients) {
+    let isAnySubscriptionValid = false;
+
+    for (let subscription of client.subscriptions) {
+      if (subscription.expiryDate && new Date(subscription.expiryDate) < now) {
+        client.subscriptionStatus = "expired";
+      } else {
+        isAnySubscriptionValid = true;
+      }
+    }
+
+    if (isAnySubscriptionValid) {
+      client.subscriptionStatus = "active";
+    }
+
+    await client.save();
+  }
+
   if (!clients.length) {
     return res.status(200).json({ message: "لا يوجد عملاء" });
   }
