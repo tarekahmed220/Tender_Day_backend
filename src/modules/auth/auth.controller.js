@@ -219,21 +219,27 @@ const getClientData = catchError(async (req, res, next) => {
   }
 
   const now = new Date();
-  let isAnySubscriptionValid = false;
+  let newStatus;
 
-  for (let subscription of user.subscriptions) {
-    if (subscription.expiryDate && new Date(subscription.expiryDate) < now) {
-      user.subscriptionStatus = "expired";
+  // التحقق من وجود اشتراكات
+  if (!user.subscriptions || user.subscriptions.length === 0) {
+    newStatus = "inactive";
+  } else {
+    const latestSubscription = user.subscriptions[0];
+    // التحقق من وجود expiryDate وصلاحيته
+    if (!latestSubscription || !latestSubscription.expiryDate) {
+      newStatus = "inactive";
     } else {
-      isAnySubscriptionValid = true;
+      newStatus =
+        new Date(latestSubscription.expiryDate) < now ? "expired" : "active";
     }
   }
 
-  if (isAnySubscriptionValid) {
-    user.subscriptionStatus = "active";
+  // تحديث الحالة فقط إذا تغيرت
+  if (user.subscriptionStatus !== newStatus) {
+    user.subscriptionStatus = newStatus;
+    await user.save();
   }
-
-  await user.save();
 
   res.status(200).json({
     success: true,
