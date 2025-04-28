@@ -45,7 +45,7 @@ export const getMainAdvertisers = catchError(async (req, res, next) => {
         parent: advertiser._id,
       });
       return {
-        ...advertiser.toObject(), // مهم عشان نقدر نضيف خصائص
+        ...advertiser.toObject(),
         childrenCount: count,
       };
     })
@@ -56,7 +56,11 @@ export const getMainAdvertisers = catchError(async (req, res, next) => {
   const skip = (page - 1) * limit;
 
   if (!advertisersWithChildrenCount.length) {
-    return next(new AppError("لا توجد جهات رئيسية", 404));
+    res.status(200).json({
+      message: "لا توجد جهات رئيسية",
+      totalCount,
+      skip,
+    });
   }
 
   res
