@@ -270,6 +270,8 @@ class APIFeatures {
   async search() {
     if (this.queryString.search && this.queryString.search.trim() !== "") {
       const searchRegex = new RegExp(this.queryString.search, "i");
+
+      // 🔥 نبحث على الدول
       const matchedCountries = await countryModel
         .find({
           $or: [
@@ -279,21 +281,28 @@ class APIFeatures {
           ],
         })
         .select("_id");
+
       const countryIds = matchedCountries.map((country) => country._id);
 
+      const searchConditions = [
+        { name_ar: searchRegex },
+        { name_en: searchRegex },
+        { name: searchRegex },
+        { email: searchRegex },
+        { tenderNumber: searchRegex },
+        { phone: searchRegex },
+        { address: searchRegex },
+        { address_ar: searchRegex },
+        { address_en: searchRegex },
+      ];
+
+      // 🔥 لو لقيت دول، ضيف شرط الدولة
+      if (countryIds.length > 0) {
+        searchConditions.push({ country: { $in: countryIds } });
+      }
+
       this.query = this.query.find({
-        $or: [
-          { name_ar: searchRegex },
-          { name_en: searchRegex },
-          { name: searchRegex },
-          { email: searchRegex },
-          { tenderNumber: searchRegex },
-          { phone: searchRegex },
-          { address: searchRegex },
-          { address_ar: searchRegex },
-          { address_en: searchRegex },
-          { country: { $in: countryIds } },
-        ],
+        $or: searchConditions,
       });
     }
     return this;

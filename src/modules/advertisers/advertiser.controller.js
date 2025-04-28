@@ -18,56 +18,56 @@ export const getAllAdvertisersGrouped = catchError(async (req, res, next) => {
   });
 });
 
-export const getMainAdvertisers = catchError(async (req, res, next) => {
-  const totalCount = await advertiserModel.countDocuments({
-    isDeleted: false,
-    parent: null,
-  });
+// export const getMainAdvertisers = catchError(async (req, res, next) => {
+//   const totalCount = await advertiserModel.countDocuments({
+//     isDeleted: false,
+//     parent: null,
+//   });
 
-  const features = new APIFeatures(
-    advertiserModel
-      .find({ isDeleted: false, parent: null })
-      .populate("parent", "name_ar name_en"),
-    req.query
-  )
-    .search()
-    .filter()
-    .sort()
-    .limitFields()
-    .paginate();
+//   const features = new APIFeatures(
+//     advertiserModel
+//       .find({ isDeleted: false, parent: null })
+//       .populate("parent", "name_ar name_en"),
+//     req.query
+//   )
+//     .search()
+//     .filter()
+//     .sort()
+//     .limitFields()
+//     .paginate();
 
-  const mainAdvertisers = await features.query;
+//   const mainAdvertisers = await features.query;
 
-  const advertisersWithChildrenCount = await Promise.all(
-    mainAdvertisers.map(async (advertiser) => {
-      const count = await advertiserModel.countDocuments({
-        isDeleted: false,
-        parent: advertiser._id,
-      });
-      return {
-        ...advertiser.toObject(),
-        childrenCount: count,
-      };
-    })
-  );
+//   const advertisersWithChildrenCount = await Promise.all(
+//     mainAdvertisers.map(async (advertiser) => {
+//       const count = await advertiserModel.countDocuments({
+//         isDeleted: false,
+//         parent: advertiser._id,
+//       });
+//       return {
+//         ...advertiser.toObject(),
+//         childrenCount: count,
+//       };
+//     })
+//   );
 
-  const page = req.query.page * 1 || 1;
-  const limit = req.query.limit * 1 || 10;
-  const skip = (page - 1) * limit;
+//   const page = req.query.page * 1 || 1;
+//   const limit = req.query.limit * 1 || 10;
+//   const skip = (page - 1) * limit;
 
-  if (!advertisersWithChildrenCount.length) {
-    res.status(200).json({
-      data: [],
-      message: "لا توجد جهات رئيسية",
-      totalCount,
-      skip,
-    });
-  }
+//   if (!advertisersWithChildrenCount.length) {
+//     res.status(200).json({
+//       data: [],
+//       message: "لا توجد جهات رئيسية",
+//       totalCount,
+//       skip,
+//     });
+//   }
 
-  res
-    .status(200)
-    .json({ data: advertisersWithChildrenCount, totalCount, skip });
-});
+//   res
+//     .status(200)
+//     .json({ data: advertisersWithChildrenCount, totalCount, skip });
+// });
 
 // إضافة معلن جديد
 export const addAdvertiser = catchError(async (req, res, next) => {
@@ -118,6 +118,58 @@ export const addAdvertiser = catchError(async (req, res, next) => {
   res.status(201).json({
     message: "تمت إضافة الجهة بنجاح",
     advertiser: newAdvertiser,
+  });
+});
+
+export const getMainAdvertisers = catchError(async (req, res, next) => {
+  const totalCount = await advertiserModel.countDocuments({
+    isDeleted: false,
+    parent: null,
+  });
+
+  const features = new APIFeatures(
+    advertiserModel
+      .find({ isDeleted: false, parent: null })
+      .populate("parent", "name_ar name_en"),
+    req.query
+  );
+
+  await features.search(); // 🛠️ هنا
+
+  features.filter().sort().limitFields().paginate(); // 🛠️ بعدين باقي الشغل
+
+  const mainAdvertisers = await features.query;
+
+  const advertisersWithChildrenCount = await Promise.all(
+    mainAdvertisers.map(async (advertiser) => {
+      const count = await advertiserModel.countDocuments({
+        isDeleted: false,
+        parent: advertiser._id,
+      });
+      return {
+        ...advertiser.toObject(),
+        childrenCount: count,
+      };
+    })
+  );
+
+  const page = req.query.page * 1 || 1;
+  const limit = req.query.limit * 1 || 10;
+  const skip = (page - 1) * limit;
+
+  if (!advertisersWithChildrenCount.length) {
+    return res.status(200).json({
+      data: [],
+      message: "لا توجد جهات رئيسية",
+      totalCount,
+      skip,
+    });
+  }
+
+  res.status(200).json({
+    data: advertisersWithChildrenCount,
+    totalCount,
+    skip,
   });
 });
 
