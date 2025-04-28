@@ -14,13 +14,16 @@ const advertiserSchema = new mongoose.Schema(
     },
     phone: {
       type: String,
-      required: [true, "من فضلك قم بإدخال رقم الموبايل"],
       trim: true,
+      default: null,
+    },
+    extraPhone: {
+      type: String,
+      trim: true,
+      default: null,
     },
     email: {
       type: String,
-      required: [true, "من فضلك قم بإدخال البريد الالكتروني"],
-      unique: true,
       lowercase: true,
       trim: true,
       match: [
@@ -28,16 +31,32 @@ const advertiserSchema = new mongoose.Schema(
         "من فضلك قم بإدخال بريد إلكتروني صالح",
       ],
       index: true,
+      default: null,
+    },
+    extraEmail: {
+      type: String,
+      lowercase: true,
+      trim: true,
+      match: [
+        /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/,
+        "من فضلك قم بإدخال بريد إلكتروني إضافي صالح",
+      ],
+      default: null,
     },
     address_ar: {
       type: String,
-      required: [true, "من فضلك قم بإدخال العنوان بالعربية"],
       trim: true,
+      default: null,
     },
     address_en: {
       type: String,
-      required: [true, "من فضلك قم بإدخال العنوان بالإنجليزية"],
       trim: true,
+      default: null,
+    },
+    country: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Country",
+      default: null,
     },
     parent: {
       type: mongoose.Schema.Types.ObjectId,

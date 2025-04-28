@@ -66,23 +66,47 @@ export const getMainAdvertisers = catchError(async (req, res, next) => {
 
 // إضافة معلن جديد
 export const addAdvertiser = catchError(async (req, res, next) => {
-  const { name_ar, name_en, phone, email, address_ar, address_en, parent } =
-    req.body;
+  const {
+    name_ar,
+    name_en,
+    phone,
+    extraPhone,
+    email,
+    extraEmail,
+    address_ar,
+    address_en,
+    parent,
+    country,
+  } = req.body;
 
-  const existingAdvertiser = await advertiserModel.findOne({
-    $or: [{ email }, { phone }],
-  });
+  const searchConditions = [];
+  if (email) searchConditions.push({ email });
+  if (phone) searchConditions.push({ phone });
+
+  let existingAdvertiser = null;
+  if (searchConditions.length) {
+    existingAdvertiser = await advertiserModel.findOne({
+      $or: searchConditions,
+    });
+  }
 
   if (existingAdvertiser) {
     if (existingAdvertiser.isDeleted) {
       existingAdvertiser.isDeleted = false;
       existingAdvertiser.name_ar = name_ar;
       existingAdvertiser.name_en = name_en;
-      existingAdvertiser.phone = phone;
-      existingAdvertiser.email = email;
-      existingAdvertiser.address_ar = address_ar;
-      existingAdvertiser.address_en = address_en;
+      existingAdvertiser.phone = phone || existingAdvertiser.phone;
+      existingAdvertiser.extraPhone =
+        extraPhone || existingAdvertiser.extraPhone;
+      existingAdvertiser.email = email || existingAdvertiser.email;
+      existingAdvertiser.extraEmail =
+        extraEmail || existingAdvertiser.extraEmail;
+      existingAdvertiser.address_ar =
+        address_ar || existingAdvertiser.address_ar;
+      existingAdvertiser.address_en =
+        address_en || existingAdvertiser.address_en;
       existingAdvertiser.parent = parent || null;
+      existingAdvertiser.country = country || null;
 
       await existingAdvertiser.save();
 
@@ -97,43 +121,133 @@ export const addAdvertiser = catchError(async (req, res, next) => {
   const newAdvertiser = new advertiserModel({
     name_ar,
     name_en,
-    phone,
-    email,
-    address_ar,
-    address_en,
+    phone: phone || null,
+    extraPhone: extraPhone || null,
+    email: email || null,
+    extraEmail: extraEmail || null,
+    address_ar: address_ar || null,
+    address_en: address_en || null,
     parent: parent || null,
+    country: country || null,
   });
 
   await newAdvertiser.save();
 
-  res
-    .status(201)
-    .json({ message: "تمت إضافة الجهة بنجاح", advertiser: newAdvertiser });
+  res.status(201).json({
+    message: "تمت إضافة الجهة بنجاح",
+    advertiser: newAdvertiser,
+  });
 });
+
+// export const addAdvertiser = catchError(async (req, res, next) => {
+//   const { name_ar, name_en, phone, email, address_ar, address_en, parent } =
+//     req.body;
+
+//   const existingAdvertiser = await advertiserModel.findOne({
+//     $or: [{ email }, { phone }],
+//   });
+
+//   if (existingAdvertiser) {
+//     if (existingAdvertiser.isDeleted) {
+//       existingAdvertiser.isDeleted = false;
+//       existingAdvertiser.name_ar = name_ar;
+//       existingAdvertiser.name_en = name_en;
+//       existingAdvertiser.phone = phone;
+//       existingAdvertiser.email = email;
+//       existingAdvertiser.address_ar = address_ar;
+//       existingAdvertiser.address_en = address_en;
+//       existingAdvertiser.parent = parent || null;
+
+//       await existingAdvertiser.save();
+
+//       return res.status(200).json({
+//         message: "تمت إعادة تفعيل الجهة بنجاح",
+//         advertiser: existingAdvertiser,
+//       });
+//     }
+//     return next(new AppError("هذه الجهة موجودة بالفعل", 400));
+//   }
+
+//   const newAdvertiser = new advertiserModel({
+//     name_ar,
+//     name_en,
+//     phone,
+//     email,
+//     address_ar,
+//     address_en,
+//     parent: parent || null,
+//   });
+
+//   await newAdvertiser.save();
+
+//   res
+//     .status(201)
+//     .json({ message: "تمت إضافة الجهة بنجاح", advertiser: newAdvertiser });
+// });
 
 // تحديث معلن
 export const updateAdvertiser = catchError(async (req, res, next) => {
   const { id } = req.params;
-  const { name_ar, name_en, phone, email, address_ar, address_en, parent } =
-    req.body;
+  const {
+    name_ar,
+    name_en,
+    phone,
+    extraPhone,
+    email,
+    extraEmail,
+    address_ar,
+    address_en,
+    parent,
+    country,
+  } = req.body;
 
   const advertiser = await advertiserModel.findById(id);
+
   if (!advertiser || advertiser.isDeleted) {
     return next(new AppError("المعلن غير موجود", 404));
   }
 
-  advertiser.name_ar = name_ar || advertiser.name_ar;
-  advertiser.name_en = name_en || advertiser.name_en;
-  advertiser.phone = phone || advertiser.phone;
-  advertiser.email = email || advertiser.email;
-  advertiser.address_ar = address_ar || advertiser.address_ar;
-  advertiser.address_en = address_en || advertiser.address_en;
+  advertiser.name_ar = name_ar ?? advertiser.name_ar;
+  advertiser.name_en = name_en ?? advertiser.name_en;
+  advertiser.phone = phone ?? advertiser.phone;
+  advertiser.extraPhone = extraPhone ?? advertiser.extraPhone;
+  advertiser.email = email ?? advertiser.email;
+  advertiser.extraEmail = extraEmail ?? advertiser.extraEmail;
+  advertiser.address_ar = address_ar ?? advertiser.address_ar;
+  advertiser.address_en = address_en ?? advertiser.address_en;
   advertiser.parent = parent !== undefined ? parent : advertiser.parent;
+  advertiser.country = country !== undefined ? country : advertiser.country;
 
   await advertiser.save();
 
-  res.status(200).json({ message: "تم تحديث بيانات الجهة بنجاح", advertiser });
+  res.status(200).json({
+    message: "تم تحديث بيانات الجهة بنجاح",
+    advertiser,
+  });
 });
+
+// export const updateAdvertiser = catchError(async (req, res, next) => {
+//   const { id } = req.params;
+//   const { name_ar, name_en, phone, email, address_ar, address_en, parent } =
+//     req.body;
+
+//   const advertiser = await advertiserModel.findById(id);
+//   if (!advertiser || advertiser.isDeleted) {
+//     return next(new AppError("المعلن غير موجود", 404));
+//   }
+
+//   advertiser.name_ar = name_ar || advertiser.name_ar;
+//   advertiser.name_en = name_en || advertiser.name_en;
+//   advertiser.phone = phone || advertiser.phone;
+//   advertiser.email = email || advertiser.email;
+//   advertiser.address_ar = address_ar || advertiser.address_ar;
+//   advertiser.address_en = address_en || advertiser.address_en;
+//   advertiser.parent = parent !== undefined ? parent : advertiser.parent;
+
+//   await advertiser.save();
+
+//   res.status(200).json({ message: "تم تحديث بيانات الجهة بنجاح", advertiser });
+// });
 
 // حذف معلن
 export const deleteAdvertiser = catchError(async (req, res, next) => {

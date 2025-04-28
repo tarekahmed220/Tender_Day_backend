@@ -13,24 +13,39 @@ export const advertiserValidation = Joi.object({
   phone: Joi.string()
     .trim()
     .pattern(/^[0-9]{10,15}$/)
-    .required()
+    .optional()
+    .allow(null, "")
     .messages({
-      "string.empty": "من فضلك قم بإدخال رقم الموبايل",
       "string.pattern.base":
         "رقم الهاتف غير صالح، يجب أن يتكون من 10 إلى 15 رقمًا",
     }),
-  email: Joi.string().trim().email().required().messages({
-    "string.empty": "من فضلك قم بإدخال البريد الإلكتروني",
+  extraPhone: Joi.string()
+    .trim()
+    .pattern(/^[0-9]{10,15}$/)
+    .optional()
+    .allow(null, "")
+    .messages({
+      "string.pattern.base":
+        "رقم الهاتف الإضافي غير صالح، يجب أن يتكون من 10 إلى 15 رقمًا",
+    }),
+  email: Joi.string().trim().email().optional().allow(null, "").messages({
     "string.email": "من فضلك قم بإدخال بريد إلكتروني صالح",
   }),
-  address_ar: Joi.string().trim().min(5).max(100).required().messages({
-    "string.empty": "من فضلك قم بإدخال العنوان بالعربية",
-    "string.min": "يجب أن يكون العنوان على الأقل 5 أحرف",
+  extraEmail: Joi.string().trim().email().optional().allow(null, "").messages({
+    "string.email": "من فضلك قم بإدخال بريد إلكتروني إضافي صالح",
   }),
-  address_en: Joi.string().trim().min(5).max(100).required().messages({
-    "string.empty": "من فضلك قم بإدخال العنوان بالإنجليزية",
-    "string.min": "يجب أن يكون العنوان على الأقل 5 أحرف",
-  }),
+  address_ar: Joi.string().trim().min(5).max(100).optional().allow(null, ""),
+  address_en: Joi.string().trim().min(5).max(100).optional().allow(null, ""),
+  country: Joi.string()
+    .trim()
+    .optional()
+    .allow(null, "")
+    .custom((value, helpers) => {
+      if (value && !mongoose.Types.ObjectId.isValid(value)) {
+        return helpers.message("معرف الدولة غير صالح");
+      }
+      return value;
+    }),
   parent: Joi.string()
     .trim()
     .optional()
@@ -68,11 +83,33 @@ export const updateAdvertiserValidation = Joi.object({
       "string.pattern.base":
         "رقم الهاتف غير صالح، يجب أن يتكون من 10 إلى 15 رقمًا",
     }),
+  extraPhone: Joi.string()
+    .trim()
+    .pattern(/^[0-9]{10,15}$/)
+    .optional()
+    .allow(null, "")
+    .messages({
+      "string.pattern.base":
+        "رقم الهاتف الإضافي غير صالح، يجب أن يتكون من 10 إلى 15 رقمًا",
+    }),
   email: Joi.string().trim().email().optional().allow(null, "").messages({
     "string.email": "من فضلك قم بإدخال بريد إلكتروني صالح",
   }),
+  extraEmail: Joi.string().trim().email().optional().allow(null, "").messages({
+    "string.email": "من فضلك قم بإدخال بريد إلكتروني إضافي صالح",
+  }),
   address_ar: Joi.string().trim().min(5).max(100).optional().allow(null, ""),
   address_en: Joi.string().trim().min(5).max(100).optional().allow(null, ""),
+  country: Joi.string()
+    .trim()
+    .optional()
+    .allow(null, "")
+    .custom((value, helpers) => {
+      if (value && !mongoose.Types.ObjectId.isValid(value)) {
+        return helpers.message("معرف الدولة غير صالح");
+      }
+      return value;
+    }),
   parent: Joi.string()
     .trim()
     .optional()

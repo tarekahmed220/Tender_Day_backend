@@ -30,7 +30,6 @@ advertiserRoutes.get(
 advertiserRoutes.get(
   "/get-all-advertisers-group",
   protect,
-  // restrictTo("admin"),
   restrictToSubscription,
   getAllAdvertisersGrouped
 );
