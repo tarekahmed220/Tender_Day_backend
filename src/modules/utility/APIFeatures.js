@@ -5,6 +5,7 @@
 //   }
 
 import mongoose from "mongoose";
+import countryModel from "../../../db/models/country.model.js";
 
 //   filter() {
 //     const queryObj = { ...this.queryString };
@@ -266,9 +267,20 @@ class APIFeatures {
     return this;
   }
 
-  search() {
+  async search() {
     if (this.queryString.search && this.queryString.search.trim() !== "") {
       const searchRegex = new RegExp(this.queryString.search, "i");
+      const matchedCountries = await countryModel
+        .find({
+          $or: [
+            { name_ar: searchRegex },
+            { name_en: searchRegex },
+            { name: searchRegex },
+          ],
+        })
+        .select("_id");
+      const countryIds = matchedCountries.map((country) => country._id);
+
       this.query = this.query.find({
         $or: [
           { name_ar: searchRegex },
@@ -280,6 +292,7 @@ class APIFeatures {
           { address: searchRegex },
           { address_ar: searchRegex },
           { address_en: searchRegex },
+          { country: { $in: countryIds } },
         ],
       });
     }
