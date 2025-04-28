@@ -215,9 +215,9 @@ export const updateAdvertiser = catchError(async (req, res, next) => {
   advertiser.name_ar = name_ar ?? advertiser.name_ar;
   advertiser.name_en = name_en ?? advertiser.name_en;
   advertiser.phone = phone ?? advertiser.phone;
-  advertiser.extraPhone = extraPhone ?? advertiser.extraPhone;
+  advertiser.extraPhone = extraPhone === null ? null : extraPhone;
   advertiser.email = email ?? advertiser.email;
-  advertiser.extraEmail = extraEmail ?? advertiser.extraEmail;
+  advertiser.extraEmail = extraEmail === null ? null : extraEmail;
   advertiser.address_ar = address_ar ?? advertiser.address_ar;
   advertiser.address_en = address_en ?? advertiser.address_en;
   advertiser.parent = parent !== undefined ? parent : advertiser.parent;
