@@ -164,7 +164,13 @@ export const getTenderById = catchError(async (req, res, next) => {
     .populate("country", "name_ar name_en ")
     .populate("mainField", "name_ar name_en ")
     .populate("subField", "name_ar name_en ")
-    .populate("mainAdvertiser")
+    .populate({
+      path: "mainAdvertiser",
+      populate: {
+        path: "country",
+        select: "name_ar name_en",
+      },
+    })
     .populate("subAdvertiser")
     .populate("currency")
     .lean();
