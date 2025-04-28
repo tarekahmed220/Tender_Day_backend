@@ -57,6 +57,7 @@ export const getMainAdvertisers = catchError(async (req, res, next) => {
 
   if (!advertisersWithChildrenCount.length) {
     res.status(200).json({
+      data: [],
       message: "لا توجد جهات رئيسية",
       totalCount,
       skip,
