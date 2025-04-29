@@ -122,21 +122,27 @@ export const addAdvertiser = catchError(async (req, res, next) => {
 });
 
 export const getMainAdvertisers = catchError(async (req, res, next) => {
-  const totalCount = await advertiserModel.countDocuments({
-    isDeleted: false,
-    parent: null,
-  });
+  const filterConditions = { isDeleted: false, parent: null };
+
+  // 🛠️ لو فيه دول متبعتين مع الريكوست
+  if (req.query.countryIds) {
+    const countryIds = Array.isArray(req.query.countryIds)
+      ? req.query.countryIds
+      : [req.query.countryIds];
+
+    filterConditions.country = { $in: countryIds };
+  }
+
+  const totalCount = await advertiserModel.countDocuments(filterConditions);
 
   const features = new APIFeatures(
     advertiserModel
-      .find({ isDeleted: false, parent: null })
+      .find(filterConditions)
       .populate("parent", "name_ar name_en"),
     req.query
   );
 
-  await features.search(); // 🛠️ هنا
-
-  features.filter().sort().limitFields().paginate(); // 🛠️ بعدين باقي الشغل
+  features.search().filter().sort().limitFields().paginate(); // ✅ رجعت السلسلة طبيعية من غير await
 
   const mainAdvertisers = await features.query;
 
