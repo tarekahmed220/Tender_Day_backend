@@ -27,7 +27,7 @@ advertiserRoutes.get(
   getMainAdvertisers
 );
 
-advertiserRoutes.get(
+advertiserRoutes.post(
   "/get-all-advertisers-group",
   protect,
   restrictToSubscription,

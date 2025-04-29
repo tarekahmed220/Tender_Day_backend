@@ -20,16 +20,11 @@ import AppError from "../utility/appError.js";
 
 export const getAllAdvertisersGrouped = catchError(async (req, res, next) => {
   const filterConditions = { isDeleted: false };
-  console.log("req.query.countryIds", req.query.countryIds);
-  if (req.query.countryIds) {
-    let countryIds = req.query.countryIds;
 
-    // 🛠️ لو مش Array، خليه Array
-    if (!Array.isArray(countryIds)) {
-      countryIds = [countryIds];
-    }
-
-    filterConditions.country = { $in: countryIds };
+  if (req.body.countryIds && req.body.countryIds.length > 0) {
+    filterConditions.country = {
+      $in: req.body.countryIds.map((id) => new mongoose.Types.ObjectId(id)),
+    };
   }
 
   const allAdvertisers = await advertiserModel
