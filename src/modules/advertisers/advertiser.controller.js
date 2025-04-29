@@ -22,9 +22,12 @@ export const getAllAdvertisersGrouped = catchError(async (req, res, next) => {
   const filterConditions = { isDeleted: false };
 
   if (req.query.countryIds) {
-    const countryIds = Array.isArray(req.query.countryIds)
-      ? req.query.countryIds
-      : [req.query.countryIds];
+    let countryIds = req.query.countryIds;
+
+    // 🛠️ لو مش Array، خليه Array
+    if (!Array.isArray(countryIds)) {
+      countryIds = [countryIds];
+    }
 
     filterConditions.country = { $in: countryIds };
   }
