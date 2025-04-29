@@ -3,13 +3,37 @@ import catchError from "../../middleware/handleError.js";
 import APIFeatures from "../utility/APIFeatures.js";
 import AppError from "../utility/appError.js";
 
+// export const getAllAdvertisersGrouped = catchError(async (req, res, next) => {
+//   const allAdvertisers = await advertiserModel
+//     .find({ isDeleted: false })
+//     .select("_id name_ar name_en parent");
+
+//   const mainAdvertisers = allAdvertisers.filter((adv) => !adv.parent);
+
+//   const subAdvertisers = allAdvertisers.filter((adv) => adv.parent);
+
+//   res.status(200).json({
+//     mainAdvertisers,
+//     subAdvertisers,
+//   });
+// });
+
 export const getAllAdvertisersGrouped = catchError(async (req, res, next) => {
+  const filterConditions = { isDeleted: false };
+
+  if (req.query.countryIds) {
+    const countryIds = Array.isArray(req.query.countryIds)
+      ? req.query.countryIds
+      : [req.query.countryIds];
+
+    filterConditions.country = { $in: countryIds };
+  }
+
   const allAdvertisers = await advertiserModel
-    .find({ isDeleted: false })
+    .find(filterConditions)
     .select("_id name_ar name_en parent");
 
   const mainAdvertisers = allAdvertisers.filter((adv) => !adv.parent);
-
   const subAdvertisers = allAdvertisers.filter((adv) => adv.parent);
 
   res.status(200).json({
@@ -18,113 +42,9 @@ export const getAllAdvertisersGrouped = catchError(async (req, res, next) => {
   });
 });
 
-// export const getMainAdvertisers = catchError(async (req, res, next) => {
-//   const totalCount = await advertiserModel.countDocuments({
-//     isDeleted: false,
-//     parent: null,
-//   });
-
-//   const features = new APIFeatures(
-//     advertiserModel
-//       .find({ isDeleted: false, parent: null })
-//       .populate("parent", "name_ar name_en"),
-//     req.query
-//   )
-//     .search()
-//     .filter()
-//     .sort()
-//     .limitFields()
-//     .paginate();
-
-//   const mainAdvertisers = await features.query;
-
-//   const advertisersWithChildrenCount = await Promise.all(
-//     mainAdvertisers.map(async (advertiser) => {
-//       const count = await advertiserModel.countDocuments({
-//         isDeleted: false,
-//         parent: advertiser._id,
-//       });
-//       return {
-//         ...advertiser.toObject(),
-//         childrenCount: count,
-//       };
-//     })
-//   );
-
-//   const page = req.query.page * 1 || 1;
-//   const limit = req.query.limit * 1 || 10;
-//   const skip = (page - 1) * limit;
-
-//   if (!advertisersWithChildrenCount.length) {
-//     res.status(200).json({
-//       data: [],
-//       message: "لا توجد جهات رئيسية",
-//       totalCount,
-//       skip,
-//     });
-//   }
-
-//   res
-//     .status(200)
-//     .json({ data: advertisersWithChildrenCount, totalCount, skip });
-// });
-
-// إضافة معلن جديد
-export const addAdvertiser = catchError(async (req, res, next) => {
-  const {
-    name_ar,
-    name_en,
-    phone,
-    extraPhone,
-    email,
-    extraEmail,
-    address_ar,
-    address_en,
-    parent,
-    country,
-  } = req.body;
-
-  const searchConditions = [];
-  if (email) searchConditions.push({ email });
-  if (phone) searchConditions.push({ phone });
-
-  let existingAdvertiser = null;
-  if (searchConditions.length) {
-    existingAdvertiser = await advertiserModel.findOne({
-      isDeleted: false, // 🔥 هنا أضفناها
-      $or: searchConditions,
-    });
-  }
-
-  if (existingAdvertiser) {
-    return next(new AppError("هذه الجهة موجودة بالفعل", 400));
-  }
-
-  const newAdvertiser = new advertiserModel({
-    name_ar,
-    name_en,
-    phone: phone || null,
-    extraPhone: extraPhone || null,
-    email: email || null,
-    extraEmail: extraEmail || null,
-    address_ar: address_ar || null,
-    address_en: address_en || null,
-    parent: parent || null,
-    country: country || null,
-  });
-
-  await newAdvertiser.save();
-
-  res.status(201).json({
-    message: "تمت إضافة الجهة بنجاح",
-    advertiser: newAdvertiser,
-  });
-});
-
 export const getMainAdvertisers = catchError(async (req, res, next) => {
   const filterConditions = { isDeleted: false, parent: null };
 
-  // 🛠️ لو فيه دول متبعتين مع الريكوست
   if (req.query.countryIds) {
     const countryIds = Array.isArray(req.query.countryIds)
       ? req.query.countryIds
@@ -176,6 +96,57 @@ export const getMainAdvertisers = catchError(async (req, res, next) => {
     data: advertisersWithChildrenCount,
     totalCount,
     skip,
+  });
+});
+
+export const addAdvertiser = catchError(async (req, res, next) => {
+  const {
+    name_ar,
+    name_en,
+    phone,
+    extraPhone,
+    email,
+    extraEmail,
+    address_ar,
+    address_en,
+    parent,
+    country,
+  } = req.body;
+
+  const searchConditions = [];
+  if (email) searchConditions.push({ email });
+  if (phone) searchConditions.push({ phone });
+
+  let existingAdvertiser = null;
+  if (searchConditions.length) {
+    existingAdvertiser = await advertiserModel.findOne({
+      isDeleted: false, // 🔥 هنا أضفناها
+      $or: searchConditions,
+    });
+  }
+
+  if (existingAdvertiser) {
+    return next(new AppError("هذه الجهة موجودة بالفعل", 400));
+  }
+
+  const newAdvertiser = new advertiserModel({
+    name_ar,
+    name_en,
+    phone: phone || null,
+    extraPhone: extraPhone || null,
+    email: email || null,
+    extraEmail: extraEmail || null,
+    address_ar: address_ar || null,
+    address_en: address_en || null,
+    parent: parent || null,
+    country: country || null,
+  });
+
+  await newAdvertiser.save();
+
+  res.status(201).json({
+    message: "تمت إضافة الجهة بنجاح",
+    advertiser: newAdvertiser,
   });
 });
 
