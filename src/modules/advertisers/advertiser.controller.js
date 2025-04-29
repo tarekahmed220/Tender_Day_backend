@@ -20,7 +20,7 @@ import AppError from "../utility/appError.js";
 
 export const getAllAdvertisersGrouped = catchError(async (req, res, next) => {
   const filterConditions = { isDeleted: false };
-
+  console.log("req.query.countryIds", req.query.countryIds);
   if (req.query.countryIds) {
     let countryIds = req.query.countryIds;
 
