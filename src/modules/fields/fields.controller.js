@@ -3,42 +3,10 @@ import catchError from "../../middleware/handleError.js";
 import AppError from "../utility/appError.js";
 import APIFeatures from "../utility/APIFeatures.js";
 
-// export const getAllFields = catchError(async (req, res, next) => {
-//   const page = Number(req.query.page) || 1;
-//   const limit = Number(req.query.limit) || 10;
-//   const skip = (page - 1) * limit;
-
-//   const fields = await fieldModel
-//     .find({ isDeleted: false })
-//     .populate("parent", "name_ar name_en")
-//     .lean();
-
-//   const groupedFields = fields.reduce((acc, field) => {
-//     if (!field.parent) {
-//       const subFields = fields.filter(
-//         (f) => f.parent && f.parent._id.equals(field._id)
-//       );
-
-//       acc.push({
-//         ...field,
-//         subFields,
-//         subFieldsCount: subFields.length,
-//       });
-//     }
-
-//     return acc;
-//   }, []);
-//   const totalCount = groupedFields.length;
-//   const paginatedFields = groupedFields.slice(skip, skip + limit);
-//   res.status(200).json({ data: paginatedFields, totalCount, skip });
-// });
-
 export const getAllFields = catchError(async (req, res, next) => {
   const page = Number(req.query.page) || 1;
-  const limit = Number(req.query.limit) || 10;
-  console.log("req.query", req.query);
-  console.log("req.query.limit", req.query.limit);
-  console.log("limit", limit);
+  const limit = Number(req.query.limit) ?? 10;
+
   const skip = (page - 1) * limit;
 
   const features = new APIFeatures(
@@ -90,7 +58,7 @@ export const getFieldById = catchError(async (req, res, next) => {
     return next(new AppError("المجال غير موجود", 404));
   }
   const page = Number(req.query.page) || 1;
-  const limit = Number(req.query.limit) || 10;
+  const limit = Number(req.query.limit) ?? 10;
   const skip = (page - 1) * limit;
 
   const subFields = await fieldModel.find({ parent: id, isDeleted: false });
