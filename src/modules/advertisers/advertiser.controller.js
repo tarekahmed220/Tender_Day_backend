@@ -61,7 +61,7 @@ export const getMainAdvertisers = catchError(async (req, res, next) => {
     req.query
   );
 
-  features.search().filter().sort().limitFields().paginate(); // ✅ رجعت السلسلة طبيعية من غير await
+  features.search().filter().sort().limitFields().paginate();
 
   const mainAdvertisers = await features.query;
 
