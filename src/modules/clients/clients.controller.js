@@ -94,14 +94,10 @@ const deleteClient = catchError(async (req, res, next) => {
     return next(new AppError("لا يمكن حذف حساب أدمن", 403));
   }
 
-  if (client.isDeleted) {
-    return next(new AppError("المستخدم محذوف بالفعل", 400));
-  }
-
-  await userModel.findByIdAndUpdate(userId, { isDeleted: true });
+  await userModel.findByIdAndDelete(userId);
 
   res.status(200).json({
-    message: "تم حذف العميل بنجاح",
+    message: "تم حذف العميل نهائياً بنجاح",
   });
 });
 
