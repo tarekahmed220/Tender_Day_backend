@@ -36,6 +36,8 @@ import APIFeatures from "../utility/APIFeatures.js";
 export const getAllFields = catchError(async (req, res, next) => {
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 10;
+  console.log("req.query", req.query);
+  console.log("req.query.limit", req.query.limit);
   console.log("limit", limit);
   const skip = (page - 1) * limit;
 
