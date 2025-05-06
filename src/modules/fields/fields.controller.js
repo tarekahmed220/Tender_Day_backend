@@ -5,8 +5,7 @@ import APIFeatures from "../utility/APIFeatures.js";
 
 export const getAllFields = catchError(async (req, res, next) => {
   const page = Number(req.query.page) || 1;
-  const limit = Number(req.query.limit) || 10;
-  const skip = (page - 1) * limit;
+  const limit = Number(req.query.limit);
 
   const features = new APIFeatures(
     fieldModel.find({ isDeleted: false }).populate("parent", "name_ar name_en"),
@@ -36,7 +35,16 @@ export const getAllFields = catchError(async (req, res, next) => {
   }, []);
 
   const totalCount = groupedFields.length;
-  const paginatedFields = groupedFields.slice(skip, skip + limit);
+
+  // If limit is 0 or not provided, return all fields
+  let paginatedFields = groupedFields;
+  let skip = 0;
+
+  // Only apply pagination if limit is greater than 0
+  if (limit > 0) {
+    skip = (page - 1) * limit;
+    paginatedFields = groupedFields.slice(skip, skip + limit);
+  }
 
   if (!paginatedFields.length) {
     return next(new AppError("لا توجد مجالات متاحة", 404));
