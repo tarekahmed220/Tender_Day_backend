@@ -119,7 +119,7 @@ export const addAdvertiser = catchError(async (req, res, next) => {
   let existingAdvertiser = null;
   if (searchConditions.length) {
     existingAdvertiser = await advertiserModel.findOne({
-      isDeleted: false, // 🔥 هنا أضفناها
+      isDeleted: false,
       $or: searchConditions,
     });
   }
@@ -170,7 +170,6 @@ export const updateAdvertiser = catchError(async (req, res, next) => {
     return next(new AppError("المعلن غير موجود", 404));
   }
 
-  // 🔥 تحقق قبل التحديث من عدم تكرار الإيميل أو التليفون
   if (email || phone) {
     const conflictingAdvertiser = await advertiserModel.findOne({
       _id: { $ne: id },

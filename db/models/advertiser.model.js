@@ -24,23 +24,12 @@ const advertiserSchema = new mongoose.Schema(
     },
     email: {
       type: String,
-      lowercase: true,
       trim: true,
-      match: [
-        /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/,
-        "من فضلك قم بإدخال بريد إلكتروني صالح",
-      ],
-      index: true,
       default: null,
     },
     extraEmail: {
       type: String,
-      lowercase: true,
       trim: true,
-      match: [
-        /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/,
-        "من فضلك قم بإدخال بريد إلكتروني إضافي صالح",
-      ],
       default: null,
     },
     address_ar: {
