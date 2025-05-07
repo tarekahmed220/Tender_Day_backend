@@ -250,8 +250,7 @@ export const addTender = catchError(async (req, res, next) => {
   const {
     name_ar,
     name_en,
-    description_ar,
-    description_en,
+    description,
     tenderNumber,
     country,
     currency,
@@ -287,8 +286,7 @@ export const addTender = catchError(async (req, res, next) => {
   const newTender = new Tender({
     name_ar,
     name_en,
-    description_ar,
-    description_en,
+    description: JSON.parse(description),
     tenderNumber,
     country,
     currency,
@@ -323,8 +321,7 @@ export const updateTender = catchError(async (req, res, next) => {
   const allowedFields = [
     "name_ar",
     "name_en",
-    "description_ar",
-    "description_en",
+    "description",
     "tenderNumber",
     "country",
     "currency",
@@ -341,8 +338,9 @@ export const updateTender = catchError(async (req, res, next) => {
 
   allowedFields.forEach((field) => {
     if (req.body[field] !== undefined) {
-      // تحويل السلسلة الفارغة أو "null" إلى null لـ subAdvertiser
-      if (field === "subAdvertiser") {
+      if (field === "description") {
+        tender[field] = JSON.parse(req.body[field]);
+      } else if (field === "subAdvertiser") {
         if (
           req.body[field] === "" ||
           req.body[field] === "null" ||
