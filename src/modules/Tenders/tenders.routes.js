@@ -25,7 +25,6 @@ import {
   updateTenderValidation,
 } from "./tenders.validation.js";
 import { upload } from "../utility/multer.js";
-import parseDescription from "../../middleware/parseDescription.js";
 
 const tenderRoutes = express.Router();
 tenderRoutes.get("/get-all-tenders", protect, getAllTenders);
@@ -50,7 +49,6 @@ tenderRoutes.post(
   protect,
   restrictTo("admin"),
   upload.single("fileUrl"),
-  parseDescription,
   validation(addTenderValidation),
   addTender
 );
@@ -60,7 +58,6 @@ tenderRoutes.put(
   protect,
   restrictTo("admin"),
   upload.single("fileUrl"),
-  parseDescription,
   validation(updateTenderValidation),
   updateTender
 );
