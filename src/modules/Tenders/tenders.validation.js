@@ -1,17 +1,6 @@
 import Joi from "joi";
 import mongoose from "mongoose";
 
-const descriptionPointSchema = Joi.object({
-  point_ar: Joi.string().trim().min(1).required().messages({
-    "string.empty": "يجب إدخال النقطة بالعربية",
-    "string.min": "يجب أن تكون النقطة بالعربية على الأقل حرف واحد",
-  }),
-  point_en: Joi.string().trim().min(1).required().messages({
-    "string.empty": "يجب إدخال النقطة بالإنجليزية",
-    "string.min": "يجب أن تكون النقطة بالإنجليزية على الأقل حرف واحد",
-  }),
-});
-
 export const addTenderValidation = Joi.object({
   name_ar: Joi.string().trim().min(3).max(200).required().messages({
     "string.empty": "يجب إدخال اسم المناقصة بالعربية",
@@ -25,14 +14,26 @@ export const addTenderValidation = Joi.object({
     "string.max": "يجب ألا يتجاوز اسم المناقصة بالإنجليزية 200 حرف",
   }),
 
-  description: Joi.array()
-    .items(descriptionPointSchema)
-    .min(1)
+  description: Joi.string()
     .required()
+    .custom((value, helpers) => {
+      try {
+        const parsed = JSON.parse(value);
+        if (!Array.isArray(parsed)) {
+          return helpers.error("any.invalid");
+        }
+        for (const item of parsed) {
+          if (!item.point_ar || !item.point_en) {
+            return helpers.error("any.invalid");
+          }
+        }
+        return parsed;
+      } catch (e) {
+        return helpers.error("any.invalid");
+      }
+    })
     .messages({
-      "array.base": "يجب أن يكون الوصف عبارة عن قائمة من النقاط",
-      "array.min": "يجب إدخال نقطة واحدة على الأقل للوصف",
-      "any.required": "يجب إدخال وصف المناقصة",
+      "any.invalid": "يجب أن يكون الوصف عبارة عن قائمة من النقاط",
     }),
 
   tenderNumber: Joi.string().trim().required().messages({
