@@ -22,8 +22,7 @@ import siteInfoRoutes from "./src/modules/site_info/siteInfo.routes.js";
 import tenderRoutes from "./src/modules/Tenders/tenders.routes.js";
 import currencyRoutes from "./src/modules/currency/currency.routes.js";
 import messagesRoutes from "./src/modules/messages/message.routes.js";
-import { manageTenders } from "./src/modules/utility/scheduler.js";
-
+import "./src/modules/utility/scheduler.js";
 dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;

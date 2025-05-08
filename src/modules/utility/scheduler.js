@@ -5,7 +5,7 @@ import Tender from "../../../db/models/tender.model.js";
 
 const uploadDir = path.resolve("uploads", "tenders");
 
-export const manageTenders = async () => {
+const manageTenders = async () => {
   const currentDate = new Date();
 
   const activeTenders = await Tender.find({ isDeleted: false });
