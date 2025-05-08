@@ -45,13 +45,8 @@ const manageTenders = async () => {
   }
 };
 
-// جدولة الفحص كل يوم في منتصف الليل
-cron.schedule("* * * * *", () => {
+cron.schedule("0 0 * * *", () => {
   manageTenders().catch((err) => console.error("Error in cron job:", err));
 });
-// cron.schedule("0 0 * * *", () => {
-//   manageTenders().catch((err) => console.error("Error in cron job:", err));
-// });
 
-// استدعاء الفحص يدويًا عند بدء السيرفر
 manageTenders().catch((err) => console.error("Initial check failed:", err));
