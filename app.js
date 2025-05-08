@@ -22,6 +22,7 @@ import siteInfoRoutes from "./src/modules/site_info/siteInfo.routes.js";
 import tenderRoutes from "./src/modules/Tenders/tenders.routes.js";
 import currencyRoutes from "./src/modules/currency/currency.routes.js";
 import messagesRoutes from "./src/modules/messages/message.routes.js";
+import { manageTenders } from "./src/modules/utility/scheduler.js";
 
 dotenv.config();
 const app = express();
@@ -61,7 +62,7 @@ const limiter = rateLimit({
   legacyHeaders: false,
 });
 
-app.use(express.json({ limit: "30mb" }));
+app.use(express.json({ limit: "30kb" }));
 app.use(express.urlencoded({ extended: true, limit: "30mb" }));
 
 app.use(cookieParser());

@@ -407,6 +407,13 @@ export const deleteTender = catchError(async (req, res, next) => {
     return res.status(200).json({ message: "المناقصة محذوفة بالفعل" });
   }
 
+  if (tender.fileUrl) {
+    const filePath = path.join(uploadDir, path.basename(tender.fileUrl));
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+    tender.fileUrl = null;
+  }
   tender.isDeleted = true;
   await tender.save();
 
