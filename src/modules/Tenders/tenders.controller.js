@@ -246,6 +246,161 @@ export const getTendersByAdvertisers = catchError(async (req, res, next) => {
 
 const uploadDir = path.resolve("uploads", "tenders");
 
+// export const addTender = catchError(async (req, res, next) => {
+//   const {
+//     name_ar,
+//     name_en,
+//     description_ar,
+//     description_en,
+//     tenderNumber,
+//     country,
+//     currency,
+//     mainField,
+//     subField,
+//     province,
+//     mainAdvertiser,
+//     subAdvertiser,
+//     closingDate,
+//     documentPrice,
+//     guaranteeAmount,
+//     sourceInfo,
+//   } = req.body;
+
+//   let fileUrl = null;
+//   if (req.file) {
+//     const fileName = `${Date.now()}-${Math.round(
+//       Math.random() * 1e9
+//     )}${path.extname(req.file.originalname)}`;
+//     const filePath = path.join(uploadDir, fileName);
+//     if (!fs.existsSync(uploadDir)) {
+//       fs.mkdirSync(uploadDir, { recursive: true });
+//     }
+
+//     try {
+//       await fs.promises.writeFile(filePath, req.file.buffer);
+//       fileUrl = `/uploads/tenders/${fileName}`;
+//     } catch (error) {
+//       return next(new AppError(`فشل في حفظ الملف: ${error.message}`, 500));
+//     }
+//   }
+
+//   const newTender = new Tender({
+//     name_ar,
+//     name_en,
+//     description_ar,
+//     description_en,
+//     tenderNumber,
+//     country,
+//     currency,
+//     mainField,
+//     subField,
+//     province,
+//     mainAdvertiser,
+//     subAdvertiser,
+//     closingDate,
+//     documentPrice,
+//     guaranteeAmount,
+//     sourceInfo,
+//     fileUrl,
+//   });
+
+//   await newTender.save();
+
+//   res.status(201).json({
+//     message: "تمت إضافة المناقصة بنجاح",
+//     tender: newTender,
+//   });
+// });
+
+// export const updateTender = catchError(async (req, res, next) => {
+//   const { id } = req.params;
+//   const tender = await Tender.findById(id);
+
+//   if (!tender || tender.isDeleted) {
+//     return next(new AppError("المناقصة غير موجودة", 404));
+//   }
+
+//   const allowedFields = [
+//     "name_ar",
+//     "name_en",
+//     "description_ar",
+//     "description_en",
+//     "tenderNumber",
+//     "country",
+//     "currency",
+//     "mainField",
+//     "subField",
+//     "province",
+//     "mainAdvertiser",
+//     "subAdvertiser",
+//     "closingDate",
+//     "documentPrice",
+//     "guaranteeAmount",
+//     "sourceInfo",
+//   ];
+
+//   allowedFields.forEach((field) => {
+//     if (req.body[field] !== undefined) {
+//       if (field === "subAdvertiser") {
+//         if (
+//           req.body[field] === "" ||
+//           req.body[field] === "null" ||
+//           req.body[field] === null
+//         ) {
+//           tender[field] = null;
+//         } else {
+//           tender[field] = req.body[field];
+//         }
+//       } else {
+//         tender[field] = req.body[field];
+//       }
+//     }
+//   });
+
+//   if (req.file) {
+//     const fileName = `${Date.now()}-${Math.round(
+//       Math.random() * 1e9
+//     )}${path.extname(req.file.originalname)}`;
+//     const filePath = path.join(uploadDir, fileName);
+
+//     if (!fs.existsSync(uploadDir)) {
+//       fs.mkdirSync(uploadDir, { recursive: true });
+//     }
+
+//     try {
+//       if (tender.fileUrl) {
+//         const oldFilePath = path.join(
+//           "uploads",
+//           "tenders",
+//           path.basename(tender.fileUrl)
+//         );
+
+//         if (fs.existsSync(oldFilePath)) {
+//           fs.unlinkSync(oldFilePath);
+//         }
+//       }
+
+//       await fs.promises.writeFile(filePath, req.file.buffer);
+//       tender.fileUrl = `/uploads/tenders/${fileName}`;
+//     } catch (error) {
+//       return next(new AppError(`فشل في حفظ الملف: ${error.message}`, 500));
+//     }
+//   }
+
+//   await tender.save();
+
+//   res.status(200).json({
+//     message: "تم تحديث بيانات المناقصة بنجاح",
+//     tender,
+//   });
+// });
+
+import fs from "fs/promises";
+import path from "path";
+
+const uploadDir = path.resolve("uploads", "tenders");
+const tempDir = path.resolve("uploads", "temp");
+
 export const addTender = catchError(async (req, res, next) => {
   const {
     name_ar,
@@ -266,24 +421,15 @@ export const addTender = catchError(async (req, res, next) => {
     sourceInfo,
   } = req.body;
 
+  let tempFilePath = null;
   let fileUrl = null;
-  if (req.file) {
-    const fileName = `${Date.now()}-${Math.round(
-      Math.random() * 1e9
-    )}${path.extname(req.file.originalname)}`;
-    const filePath = path.join(uploadDir, fileName);
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
 
-    try {
-      await fs.promises.writeFile(filePath, req.file.buffer);
-      fileUrl = `/uploads/tenders/${fileName}`;
-    } catch (error) {
-      return next(new AppError(`فشل في حفظ الملف: ${error.message}`, 500));
-    }
+  // إذا كان هناك ملف مرفوع، خزّن مساره المؤقت
+  if (req.file) {
+    tempFilePath = path.join(tempDir, req.file.filename);
   }
 
+  // إنشاء المناقصة بدون fileUrl في البداية
   const newTender = new Tender({
     name_ar,
     name_en,
@@ -301,15 +447,45 @@ export const addTender = catchError(async (req, res, next) => {
     documentPrice,
     guaranteeAmount,
     sourceInfo,
-    fileUrl,
   });
 
-  await newTender.save();
+  try {
+    // حفظ المناقصة في قاعدة البيانات
+    await newTender.save();
 
-  res.status(201).json({
-    message: "تمت إضافة المناقصة بنجاح",
-    tender: newTender,
-  });
+    // إذا كان هناك ملف، انقل الملف من temp إلى tenders
+    if (tempFilePath) {
+      const fileName = `${Date.now()}-${Math.round(
+        Math.random() * 1e9
+      )}${path.extname(req.file.originalname)}`;
+      const finalFilePath = path.join(uploadDir, fileName);
+
+      // نقل الملف
+      await fs.rename(tempFilePath, finalFilePath);
+      fileUrl = `/uploads/tenders/${fileName}`;
+
+      // تحديث المناقصة بإضافة fileUrl
+      newTender.fileUrl = fileUrl;
+      await newTender.save();
+    }
+
+    res.status(201).json({
+      message: "تمت إضافة المناقصة بنجاح",
+      tender: newTender,
+    });
+  } catch (error) {
+    // إذا فشلت العملية، احذف الملف المؤقت إذا كان موجودًا
+    if (
+      tempFilePath &&
+      (await fs
+        .access(tempFilePath)
+        .then(() => true)
+        .catch(() => false))
+    ) {
+      await fs.unlink(tempFilePath);
+    }
+    return next(new AppError(`فشل في إنشاء المناقصة: ${error.message}`, 500));
+  }
 });
 
 export const updateTender = catchError(async (req, res, next) => {
@@ -339,6 +515,7 @@ export const updateTender = catchError(async (req, res, next) => {
     "sourceInfo",
   ];
 
+  // تحديث الحقول المسموح بها
   allowedFields.forEach((field) => {
     if (req.body[field] !== undefined) {
       if (field === "subAdvertiser") {
@@ -357,44 +534,69 @@ export const updateTender = catchError(async (req, res, next) => {
     }
   });
 
+  let tempFilePath = null;
+  let fileUrl = tender.fileUrl;
+
+  // إذا كان هناك ملف مرفوع، خزّن مساره المؤقت
   if (req.file) {
-    const fileName = `${Date.now()}-${Math.round(
-      Math.random() * 1e9
-    )}${path.extname(req.file.originalname)}`;
-    const filePath = path.join(uploadDir, fileName);
+    tempFilePath = path.join(tempDir, req.file.filename);
+  }
 
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
+  try {
+    // حفظ التغييرات الأولية
+    await tender.save();
 
-    try {
+    // إذا كان هناك ملف جديد، انقل الملف وحدّث fileUrl
+    if (tempFilePath) {
+      const fileName = `${Date.now()}-${Math.round(
+        Math.random() * 1e9
+      )}${path.extname(req.file.originalname)}`;
+      const finalFilePath = path.join(uploadDir, fileName);
+
+      // نقل الملف الجديد
+      await fs.rename(tempFilePath, finalFilePath);
+      fileUrl = `/uploads/tenders/${fileName}`;
+
+      // حذف الملف القديم إذا كان موجودًا
       if (tender.fileUrl) {
         const oldFilePath = path.join(
           "uploads",
           "tenders",
           path.basename(tender.fileUrl)
         );
-
-        if (fs.existsSync(oldFilePath)) {
-          fs.unlinkSync(oldFilePath);
+        if (
+          await fs
+            .access(oldFilePath)
+            .then(() => true)
+            .catch(() => false)
+        ) {
+          await fs.unlink(oldFilePath);
         }
       }
 
-      await fs.promises.writeFile(filePath, req.file.buffer);
-      tender.fileUrl = `/uploads/tenders/${fileName}`;
-    } catch (error) {
-      return next(new AppError(`فشل في حفظ الملف: ${error.message}`, 500));
+      // تحديث fileUrl في المناقصة
+      tender.fileUrl = fileUrl;
+      await tender.save();
     }
+
+    res.status(200).json({
+      message: "تم تحديث بيانات المناقصة بنجاح",
+      tender,
+    });
+  } catch (error) {
+    // إذا فشلت العملية، احذف الملف المؤقت إذا كان موجودًا
+    if (
+      tempFilePath &&
+      (await fs
+        .access(tempFilePath)
+        .then(() => true)
+        .catch(() => false))
+    ) {
+      await fs.unlink(tempFilePath);
+    }
+    return next(new AppError(`فشل في تحديث المناقصة: ${error.message}`, 500));
   }
-
-  await tender.save();
-
-  res.status(200).json({
-    message: "تم تحديث بيانات المناقصة بنجاح",
-    tender,
-  });
 });
-
 export const deleteTender = catchError(async (req, res, next) => {
   const { id } = req.params;
   const tender = await Tender.findById(id);
