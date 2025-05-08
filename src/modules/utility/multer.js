@@ -29,6 +29,7 @@ export const upload = multer({
       "application/x-tar",
       "application/gzip",
       "application/x-bzip2",
+      "application/rar",
     ];
     if (!allowedTypes.includes(file.mimetype)) {
       return cb(new Error("صيغة الملف غير مدعومة"), false);
