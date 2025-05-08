@@ -3,6 +3,12 @@ import mongoose from "mongoose";
 const tenderSchema = new mongoose.Schema(
   {
     name_ar: {
+      type: String,
+      required: [true, "يجب إدخال اسم المناقصة بالعربية"],
+      trim: true,
+    },
+    name_en: {
+      type: String,
       required: [true, "يجب إدخال اسم المناقصة بالإنجليزية"],
       trim: true,
     },
