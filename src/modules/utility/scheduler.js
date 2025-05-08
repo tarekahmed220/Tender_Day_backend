@@ -21,7 +21,7 @@ export const manageTenders = async () => {
         ) {
           await fs.unlink(filePath);
         }
-        tender.fileUrl = null; // إزالة رابط الملف
+        tender.fileUrl = null;
         await tender.save();
       }
     }
