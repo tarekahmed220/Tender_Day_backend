@@ -27,7 +27,6 @@ export const manageTenders = async () => {
     }
   }
 
-  // 2. فحص المناقصات المحذوفة مبدئيًا (isDeleted: true) والتأكد من حذف الملف
   const archivedTenders = await Tender.find({ isDeleted: true });
   for (const tender of archivedTenders) {
     if (tender.fileUrl) {
