@@ -277,7 +277,7 @@ export const addTender = catchError(async (req, res, next) => {
     }
 
     try {
-      fs.writeFileSync(filePath, req.file.buffer);
+      await fs.promises.writeFile(filePath, req.file.buffer);
       fileUrl = `/uploads/tenders/${fileName}`;
     } catch (error) {
       return next(new AppError(`فشل في حفظ الملف: ${error.message}`, 500));
@@ -380,7 +380,7 @@ export const updateTender = catchError(async (req, res, next) => {
         }
       }
 
-      fs.writeFileSync(filePath, req.file.buffer);
+      await fs.promises.writeFile(filePath, req.file.buffer);
       tender.fileUrl = `/uploads/tenders/${fileName}`;
     } catch (error) {
       return next(new AppError(`فشل في حفظ الملف: ${error.message}`, 500));

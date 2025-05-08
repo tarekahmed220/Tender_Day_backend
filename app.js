@@ -61,8 +61,10 @@ const limiter = rateLimit({
   legacyHeaders: false,
 });
 
-app.use(express.json({ limit: "10kb" }));
-app.use(express.urlencoded({ extended: false, limit: 1000 }));
+app.use(express.json({ limit: "30mb" }));
+// app.use(express.urlencoded({ extended: false, limit: 1000 }));
+app.use(express.urlencoded({ extended: true, limit: "30mb" }));
+
 app.use(cookieParser());
 app.use(cors(corsOptions));
 app.use(
