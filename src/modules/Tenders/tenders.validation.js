@@ -13,6 +13,7 @@ export const addTenderValidation = Joi.object({
     "string.min": "يجب أن يكون اسم المناقصة بالإنجليزية على الأقل 3 أحرف",
     "string.max": "يجب ألا يتجاوز اسم المناقصة بالإنجليزية 200 حرف",
   }),
+
   description_ar: Joi.string().trim().required().messages({
     "string.empty": "يجب إدخال وصف المناقصة بالعربية",
   }),
