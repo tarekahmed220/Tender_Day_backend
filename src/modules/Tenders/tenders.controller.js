@@ -1,6 +1,6 @@
-import fs from "fs";
-import mongoose from "mongoose";
+import fs from "fs/promises";
 import path from "path";
+import mongoose from "mongoose";
 import Tender from "../../../db/models/tender.model.js";
 import catchError from "../../middleware/handleError.js";
 import APIFeatures from "../utility/APIFeatures.js";
@@ -12,6 +12,8 @@ const baseUrl = (req) =>
     ? "https://api.tendersday.com"
     : `${req.protocol}://${req.get("host")}`;
 
+const uploadDir = path.resolve("uploads", "tenders");
+const tempDir = path.resolve("uploads", "temp");
 export const getAllTenders = catchError(async (req, res, next) => {
   const featuresForCount = new APIFeatures(
     Tender.find({ isDeleted: false }),
@@ -244,8 +246,6 @@ export const getTendersByAdvertisers = catchError(async (req, res, next) => {
   });
 });
 
-const uploadDir = path.resolve("uploads", "tenders");
-
 // export const addTender = catchError(async (req, res, next) => {
 //   const {
 //     name_ar,
@@ -394,12 +394,6 @@ const uploadDir = path.resolve("uploads", "tenders");
 //     tender,
 //   });
 // });
-
-import fs from "fs/promises";
-import path from "path";
-
-const uploadDir = path.resolve("uploads", "tenders");
-const tempDir = path.resolve("uploads", "temp");
 
 export const addTender = catchError(async (req, res, next) => {
   const {
