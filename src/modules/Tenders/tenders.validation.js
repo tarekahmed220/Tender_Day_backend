@@ -13,28 +13,13 @@ export const addTenderValidation = Joi.object({
     "string.min": "يجب أن يكون اسم المناقصة بالإنجليزية على الأقل 3 أحرف",
     "string.max": "يجب ألا يتجاوز اسم المناقصة بالإنجليزية 200 حرف",
   }),
+  description_ar: Joi.string().trim().required().messages({
+    "string.empty": "يجب إدخال وصف المناقصة بالعربية",
+  }),
 
-  description: Joi.string()
-    .required()
-    .custom((value, helpers) => {
-      try {
-        const parsed = JSON.parse(value);
-        if (!Array.isArray(parsed)) {
-          return helpers.error("any.invalid");
-        }
-        for (const item of parsed) {
-          if (!item.point_ar || !item.point_en) {
-            return helpers.error("any.invalid");
-          }
-        }
-        return parsed;
-      } catch (e) {
-        return helpers.error("any.invalid");
-      }
-    })
-    .messages({
-      "any.invalid": "يجب أن يكون الوصف عبارة عن قائمة من النقاط",
-    }),
+  description_en: Joi.string().trim().required().messages({
+    "string.empty": "يجب إدخال وصف المناقصة بالإنجليزية",
+  }),
 
   tenderNumber: Joi.string().trim().required().messages({
     "string.empty": "يجب إدخال رقم المناقصة",

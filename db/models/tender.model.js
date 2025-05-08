@@ -1,38 +1,20 @@
 import mongoose from "mongoose";
 
-const descriptionPointSchema = new mongoose.Schema({
-  point_ar: {
-    type: String,
-    required: [true, "يجب إدخال وصف الفقرة  بالعربية"],
-    trim: true,
-  },
-  point_en: {
-    type: String,
-    required: [true, "يجب إدخال وصف الفقرة بالإنجليزية"],
-    trim: true,
-  },
-});
 const tenderSchema = new mongoose.Schema(
   {
     name_ar: {
-      type: String,
-      required: [true, "يجب إدخال اسم المناقصة بالعربية"],
-      trim: true,
-    },
-    name_en: {
-      type: String,
       required: [true, "يجب إدخال اسم المناقصة بالإنجليزية"],
       trim: true,
     },
-    description: {
-      type: [descriptionPointSchema],
-      required: [true, "يجب إدخال وصف المناقصة"],
-      validate: {
-        validator: function (v) {
-          return v && v.length > 0;
-        },
-        message: "يجب إدخال فقرة واحدة على الأقل للوصف",
-      },
+    description_ar: {
+      type: String,
+      required: [true, "يجب إدخال وصف المناقصة بالعربية"],
+      trim: true,
+    },
+    description_en: {
+      type: String,
+      required: [true, "يجب إدخال وصف المناقصة بالإنجليزية"],
+      trim: true,
     },
     tenderNumber: {
       type: String,
