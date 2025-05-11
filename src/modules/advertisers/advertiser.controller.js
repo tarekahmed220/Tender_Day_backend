@@ -260,8 +260,7 @@ export const getSubAdvertisersByParentId = catchError(
     console.log("req.query.limit", req.query.limit);
     const limit = req.query.limit * 1 || 10;
     console.log("limit", limit);
-    const skip = limit === 0 ? 0 : (page - 1) * limit;
-    console.log("skip", skip);
+    const skip = (page - 1) * limit;
 
     if (!subAdvertisers.length) {
       return res.status(200).json({
