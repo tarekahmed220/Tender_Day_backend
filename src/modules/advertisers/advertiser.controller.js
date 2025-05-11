@@ -41,6 +41,62 @@ export const getAllAdvertisersGrouped = catchError(async (req, res, next) => {
   });
 });
 
+// export const getMainAdvertisers = catchError(async (req, res, next) => {
+//   const filterConditions = { isDeleted: false, parent: null };
+
+//   if (req.query.countryIds) {
+//     const countryIds = Array.isArray(req.query.countryIds)
+//       ? req.query.countryIds
+//       : [req.query.countryIds];
+
+//     filterConditions.country = { $in: countryIds };
+//   }
+
+//   const totalCount = await advertiserModel.countDocuments(filterConditions);
+
+//   const features = new APIFeatures(
+//     advertiserModel
+//       .find(filterConditions)
+//       .populate("parent", "name_ar name_en"),
+//     req.query
+//   );
+
+//   features.search().filter().sort().limitFields().paginate();
+
+//   const mainAdvertisers = await features.query;
+
+//   const advertisersWithChildrenCount = await Promise.all(
+//     mainAdvertisers.map(async (advertiser) => {
+//       const count = await advertiserModel.countDocuments({
+//         isDeleted: false,
+//         parent: advertiser._id,
+//       });
+//       return {
+//         ...advertiser.toObject(),
+//         childrenCount: count,
+//       };
+//     })
+//   );
+
+//   const page = req.query.page * 1 || 1;
+//   const limit = req.query.limit * 1 || 10;
+//   const skip = (page - 1) * limit;
+
+//   if (!advertisersWithChildrenCount.length) {
+//     return res.status(200).json({
+//       data: [],
+//       message: "لا توجد جهات رئيسية",
+//       totalCount,
+//       skip,
+//     });
+//   }
+
+//   res.status(200).json({
+//     data: advertisersWithChildrenCount,
+//     totalCount,
+//     skip,
+//   });
+// });
 export const getMainAdvertisers = catchError(async (req, res, next) => {
   const filterConditions = { isDeleted: false, parent: null };
 
@@ -59,11 +115,21 @@ export const getMainAdvertisers = catchError(async (req, res, next) => {
       .find(filterConditions)
       .populate("parent", "name_ar name_en"),
     req.query
-  );
+  )
+    .search()
+    .filter()
+    .sort()
+    .limitFields();
 
-  features.search().filter().sort().limitFields().paginate();
-
-  const mainAdvertisers = await features.query;
+  // التعامل مع limit بشكل صريح
+  const page = req.query.page * 1 || 1;
+  const limit = req.query.limit !== undefined ? req.query.limit * 1 : 10; // قبول limit=0
+  let mainAdvertisers;
+  if (limit === 0) {
+    mainAdvertisers = await features.query; // بدون pagination
+  } else {
+    mainAdvertisers = await features.paginate().query; // مع pagination
+  }
 
   const advertisersWithChildrenCount = await Promise.all(
     mainAdvertisers.map(async (advertiser) => {
@@ -78,9 +144,7 @@ export const getMainAdvertisers = catchError(async (req, res, next) => {
     })
   );
 
-  const page = req.query.page * 1 || 1;
-  const limit = req.query.limit * 1 || 10;
-  const skip = (page - 1) * limit;
+  const skip = limit === 0 ? 0 : (page - 1) * limit;
 
   if (!advertisersWithChildrenCount.length) {
     return res.status(200).json({
@@ -306,25 +370,15 @@ export const getSubAdvertisersByParentId = catchError(
       .filter()
       .sort()
       .limitFields();
-
-    // التعامل مع limit بشكل صريح
     const page = req.query.page * 1 || 1;
-    const limit = req.query.limit !== undefined ? req.query.limit * 1 : 10; // لو limit موجود (حتى لو 0)، استخدمه
+    const limit = req.query.limit !== undefined ? req.query.limit * 1 : 10;
     let subAdvertisers;
     if (limit === 0) {
-      subAdvertisers = await features.query; // بدون pagination
+      subAdvertisers = await features.query;
     } else {
-      subAdvertisers = await features.paginate().query; // مع pagination
+      subAdvertisers = await features.paginate().query;
     }
-
     const skip = limit === 0 ? 0 : (page - 1) * limit;
-
-    console.log("req.query", req.query);
-    console.log("req.query.limit", req.query.limit);
-    console.log("limit", limit);
-    console.log("subAdvertisers length:", subAdvertisers.length);
-    console.log("totalCount:", totalCount);
-
     if (!subAdvertisers.length) {
       return res.status(200).json({
         message: "لا توجد جهات فرعية لهذا المعلن",
