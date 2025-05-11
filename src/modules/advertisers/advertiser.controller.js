@@ -256,7 +256,10 @@ export const getSubAdvertisersByParentId = catchError(
     const subAdvertisers = await features.query;
 
     const page = req.query.page * 1 || 1;
-    const limit = req.query.limit * 1 || 10;
+    console.log("req.query", req.query);
+    console.log("req.query.limit", req.query.limit);
+    const limit = req.query.limit * 1;
+    console.log("limit", limit);
     const skip = (page - 1) * limit;
 
     if (!subAdvertisers.length) {
