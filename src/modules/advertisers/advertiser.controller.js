@@ -220,6 +220,61 @@ export const deleteAdvertiser = catchError(async (req, res, next) => {
   res.status(200).json({ message: "تم حذف الجهة المعلنة بنجاح" });
 });
 
+// export const getSubAdvertisersByParentId = catchError(
+//   async (req, res, next) => {
+//     const { id } = req.params;
+
+//     const parentExists = await advertiserModel
+//       .findOne({
+//         _id: id,
+//         isDeleted: false,
+//         parent: null,
+//       })
+//       .select("name_ar name_en");
+
+//     if (!parentExists) {
+//       return next(new AppError("الجهة الرئيسية غير موجودة", 404));
+//     }
+
+//     const totalCount = await advertiserModel.countDocuments({
+//       isDeleted: false,
+//       parent: id,
+//     });
+
+//     const features = new APIFeatures(
+//       advertiserModel
+//         .find({ isDeleted: false, parent: id })
+//         .populate("parent", "name_ar name_en"),
+//       req.query
+//     )
+//       .search()
+//       .filter()
+//       .sort()
+//       .limitFields()
+//       .paginate();
+
+//     const subAdvertisers = await features.query;
+
+//     const page = req.query.page * 1 || 1;
+//     console.log("req.query", req.query);
+//     console.log("req.query.limit", req.query.limit);
+//     const limit = req.query.limit * 1 || 10;
+//     console.log("limit", limit);
+//     const skip = (page - 1) * limit;
+
+//     if (!subAdvertisers.length) {
+//       return res.status(200).json({
+//         message: "لا توجد جهات فرعية لهذا المعلن",
+//         parent: parentExists,
+//       });
+//     }
+
+//     res
+//       .status(200)
+//       .json({ data: subAdvertisers, parent: parentExists, totalCount, skip });
+//   }
+// );
+
 export const getSubAdvertisersByParentId = catchError(
   async (req, res, next) => {
     const { id } = req.params;
@@ -250,17 +305,25 @@ export const getSubAdvertisersByParentId = catchError(
       .search()
       .filter()
       .sort()
-      .limitFields()
-      .paginate();
+      .limitFields();
 
-    const subAdvertisers = await features.query;
-
+    // التعامل مع limit بشكل صريح
     const page = req.query.page * 1 || 1;
+    const limit = req.query.limit !== undefined ? req.query.limit * 1 : 10; // لو limit موجود (حتى لو 0)، استخدمه
+    let subAdvertisers;
+    if (limit === 0) {
+      subAdvertisers = await features.query; // بدون pagination
+    } else {
+      subAdvertisers = await features.paginate().query; // مع pagination
+    }
+
+    const skip = limit === 0 ? 0 : (page - 1) * limit;
+
     console.log("req.query", req.query);
     console.log("req.query.limit", req.query.limit);
-    const limit = req.query.limit * 1 || 10;
     console.log("limit", limit);
-    const skip = (page - 1) * limit;
+    console.log("subAdvertisers length:", subAdvertisers.length);
+    console.log("totalCount:", totalCount);
 
     if (!subAdvertisers.length) {
       return res.status(200).json({
