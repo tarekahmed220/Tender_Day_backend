@@ -43,8 +43,6 @@ const BASE_URL = process.env.BASE_URL || "/api/v1";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-app.use(express.static(path.resolve("public")));
-
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
@@ -77,22 +75,6 @@ app.use(
     frameguard: { action: "deny" },
   })
 );
-
-app.use(limiter);
-app.use(compression());
-app.use(hpp());
-app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
-app.use(`/api/v1/auth`, userRoutes);
-app.use(`/api/v1/clients`, clientRoutes);
-app.use(`/api/v1/countries`, countryRoutes);
-app.use(`/api/v1/advertisers`, advertiserRoutes);
-app.use(`/api/v1/fields`, fieldRoutes);
-app.use(`/api/v1/messages`, messagesRoutes);
-app.use(`/api/v1/site-info`, siteInfoRoutes);
-app.use(`/api/v1/tenders`, tenderRoutes);
-app.use(`/api/v1/currencies`, currencyRoutes);
-app.use("/", sitemapRouter);
-
 const addStaticWithCors = (route, folder) => {
   app.use(
     route,
@@ -112,6 +94,22 @@ const addStaticWithCors = (route, folder) => {
 addStaticWithCors("/uploads/tenders", "tenders");
 addStaticWithCors("/uploads/siteInfo", "siteInfo");
 addStaticWithCors("/", "public");
+
+app.use(limiter);
+app.use(compression());
+app.use(hpp());
+app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
+app.use(`/api/v1/auth`, userRoutes);
+app.use(`/api/v1/clients`, clientRoutes);
+app.use(`/api/v1/countries`, countryRoutes);
+app.use(`/api/v1/advertisers`, advertiserRoutes);
+app.use(`/api/v1/fields`, fieldRoutes);
+app.use(`/api/v1/messages`, messagesRoutes);
+app.use(`/api/v1/site-info`, siteInfoRoutes);
+app.use(`/api/v1/tenders`, tenderRoutes);
+app.use(`/api/v1/currencies`, currencyRoutes);
+app.use("/", sitemapRouter);
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "mySecretKey",
