@@ -23,11 +23,14 @@ import tenderRoutes from "./src/modules/Tenders/tenders.routes.js";
 import currencyRoutes from "./src/modules/currency/currency.routes.js";
 import messagesRoutes from "./src/modules/messages/message.routes.js";
 import "./src/modules/utility/scheduler.js";
+import sitemapRouter from "./src/modules/sitemap/sitemap.routes.js";
+import { startSitemapJob } from "./src/modules/utility/sitemapJob.js";
 dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 dbConnect();
-
+startSitemapJob();
+console.log(`[${new Date().toLocaleTimeString()}] Sitemap generated`);
 const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",") || [
   "http://localhost:3000",
   "http://localhost:5173",
@@ -86,12 +89,8 @@ app.use(`/api/v1/messages`, messagesRoutes);
 app.use(`/api/v1/site-info`, siteInfoRoutes);
 app.use(`/api/v1/tenders`, tenderRoutes);
 app.use(`/api/v1/currencies`, currencyRoutes);
+app.use("/", sitemapRouter);
 
-// app.use("/uploads/tenders", express.static(path.resolve("uploads", "tenders")));
-// app.use(
-//   "/uploads/siteInfo",
-//   express.static(path.resolve("uploads", "siteInfo"))
-// );
 const addStaticWithCors = (route, folder) => {
   app.use(
     route,
