@@ -111,6 +111,7 @@ const addStaticWithCors = (route, folder) => {
 
 addStaticWithCors("/uploads/tenders", "tenders");
 addStaticWithCors("/uploads/siteInfo", "siteInfo");
+addStaticWithCors("/", "public");
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "mySecretKey",
