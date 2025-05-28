@@ -94,6 +94,9 @@ const addStaticWithCors = (route, folder) => {
 addStaticWithCors("/uploads/tenders", "tenders");
 addStaticWithCors("/uploads/siteInfo", "siteInfo");
 addStaticWithCors("/", "public");
+app.get("/sitemap.xml", (req, res) => {
+  res.sendFile(path.resolve("public", "sitemap.xml"));
+});
 
 app.use(limiter);
 app.use(compression());
