@@ -67,7 +67,8 @@ export const generateSitemap = async () => {
   sitemap.end();
 
   const xml = await streamToPromise(sitemap).then((data) => data.toString());
-  const sitemapDir = path.resolve(process.cwd(), "public");
+
+  const sitemapDir = path.resolve("public");
   const sitemapPath = path.join(sitemapDir, "sitemap.xml");
 
   if (!fs.existsSync(sitemapDir)) {
