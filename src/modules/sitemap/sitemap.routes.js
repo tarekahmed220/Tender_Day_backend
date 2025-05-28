@@ -7,8 +7,7 @@ const router = express.Router();
 
 router.get("/sitemap.xml", async (req, res, next) => {
   try {
-    const sitemapDir = path.resolve(process.cwd(), "public");
-    const sitemapPath = path.join(sitemapDir, "sitemap.xml");
+    const sitemapPath = path.resolve("public", "sitemap.xml");
 
     if (!fs.existsSync(sitemapPath)) {
       await generateSitemap();

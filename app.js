@@ -42,7 +42,7 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",") || [
 const BASE_URL = process.env.BASE_URL || "/api/v1";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-
+app.use("/", sitemapRouter);
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
@@ -93,7 +93,7 @@ const addStaticWithCors = (route, folder) => {
 
 addStaticWithCors("/uploads/tenders", "tenders");
 addStaticWithCors("/uploads/siteInfo", "siteInfo");
-addStaticWithCors("/", "public");
+// addStaticWithCors("/", "public");
 
 app.use(limiter);
 app.use(compression());
@@ -108,7 +108,6 @@ app.use(`/api/v1/messages`, messagesRoutes);
 app.use(`/api/v1/site-info`, siteInfoRoutes);
 app.use(`/api/v1/tenders`, tenderRoutes);
 app.use(`/api/v1/currencies`, currencyRoutes);
-app.use("/", sitemapRouter);
 
 app.use(
   session({
