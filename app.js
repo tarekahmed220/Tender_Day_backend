@@ -43,7 +43,7 @@ const BASE_URL = process.env.BASE_URL || "/api/v1";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-app.use(express.static(path.resolve("public")));
+app.use(express.static(path.resolve(__dirname, "public")));
 
 const corsOptions = {
   origin: (origin, callback) => {
