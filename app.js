@@ -24,12 +24,12 @@ import currencyRoutes from "./src/modules/currency/currency.routes.js";
 import messagesRoutes from "./src/modules/messages/message.routes.js";
 import "./src/modules/utility/scheduler.js";
 import sitemapRouter from "./src/modules/sitemap/sitemap.routes.js";
-import { startSitemapJob } from "./src/modules/utility/sitemapJob.js";
+// import { startSitemapJob } from "./src/modules/utility/sitemapJob.js";
 dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 dbConnect();
-startSitemapJob();
+// startSitemapJob();
 console.log(`[${new Date().toLocaleTimeString()}] Sitemap generated`);
 const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",") || [
   "http://localhost:3000",
@@ -42,7 +42,6 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",") || [
 const BASE_URL = process.env.BASE_URL || "/api/v1";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-app.use("/", sitemapRouter);
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
@@ -93,12 +92,13 @@ const addStaticWithCors = (route, folder) => {
 
 addStaticWithCors("/uploads/tenders", "tenders");
 addStaticWithCors("/uploads/siteInfo", "siteInfo");
-addStaticWithCors("/", "public");
+// addStaticWithCors("/", "public");
 
 app.use(limiter);
 app.use(compression());
 app.use(hpp());
 app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
+app.use("/", sitemapRouter);
 app.use(`/api/v1/auth`, userRoutes);
 app.use(`/api/v1/clients`, clientRoutes);
 app.use(`/api/v1/countries`, countryRoutes);
