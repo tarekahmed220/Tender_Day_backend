@@ -53,7 +53,7 @@ const corsOptions = {
   },
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   credentials: true,
-  allowedOrigins: ["Content-Type", "Authorization"],
+  // allowedHeaders: ["Content-Type", "Authorization"],
 };
 
 const limiter = rateLimit({
@@ -78,22 +78,22 @@ app.use(
 const addStaticWithCors = (route, folder) => {
   app.use(
     route,
-    (req, res, next) => {
-      const origin = req.headers.origin;
-      if (allowedOrigins.includes(origin)) {
-        res.setHeader("Access-Control-Allow-Origin", origin);
-        res.setHeader("Access-Control-Allow-Methods", "GET");
-        res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-      }
-      next();
-    },
+    // (req, res, next) => {
+    //   const origin = req.headers.origin;
+    //   if (allowedOrigins.includes(origin)) {
+    //     res.setHeader("Access-Control-Allow-Origin", origin);
+    //     res.setHeader("Access-Control-Allow-Methods", "GET");
+    //     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    //   }
+    //   next();
+    // },
     express.static(path.resolve("uploads", folder))
   );
 };
 
 addStaticWithCors("/uploads/tenders", "tenders");
 addStaticWithCors("/uploads/siteInfo", "siteInfo");
-// addStaticWithCors("/", "public");
+addStaticWithCors("/", "public");
 
 app.use(limiter);
 app.use(compression());
