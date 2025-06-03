@@ -126,6 +126,45 @@ app.use(
   })
 );
 app.use(mongoSanitize());
+
+app.get("/api/v1/trigger-404", (req, res) => {
+  const { path, timestamp, referrer } = req.query;
+
+  console.log(
+    `[404] Path: ${path}, Time: ${timestamp}, Referrer: ${referrer || "direct"}`
+  );
+
+  res.status(404).json({
+    success: false,
+    message: "الصفحة غير موجودة (404)",
+    path: path,
+    timestamp: timestamp || new Date().toISOString(),
+    error: "PAGE_NOT_FOUND",
+  });
+});
+
+app.post("/api/v1/trigger-404", (req, res) => {
+  const { path, timestamp, referrer, userAgent, additionalData } = req.body;
+
+  const logData = {
+    path,
+    timestamp: timestamp || new Date().toISOString(),
+    referrer: referrer || "direct",
+    userAgent: userAgent || req.get("User-Agent"),
+    ip: req.ip,
+    ...additionalData,
+  };
+
+  console.log("[404 Detailed]", logData);
+
+  res.status(404).json({
+    success: false,
+    message: "الصفحة غير موجودة (404)",
+    logged: true,
+    ...logData,
+  });
+});
+
 app.use("*", (req, res) => {
   res.status(404).json({
     success: false,
@@ -144,4 +183,6 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(port, () => console.log(`Server running on port: ${port}!`));
+app.listen(port, () =>
+  console.log(`Server running on port: http://localhost:${port}`)
+);
