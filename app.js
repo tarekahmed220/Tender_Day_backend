@@ -125,8 +125,13 @@ app.use(
     },
   })
 );
-
 app.use(mongoSanitize());
+app.use("*", (req, res) => {
+  res.status(404).json({
+    success: false,
+    message: "الصفحة غير موجودة (404)",
+  });
+});
 
 app.use((err, req, res, next) => {
   console.error(err);
