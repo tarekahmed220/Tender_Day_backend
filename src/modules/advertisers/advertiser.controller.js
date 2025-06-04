@@ -4,21 +4,6 @@ import catchError from "../../middleware/handleError.js";
 import APIFeatures from "../utility/APIFeatures.js";
 import AppError from "../utility/appError.js";
 
-// export const getAllAdvertisersGrouped = catchError(async (req, res, next) => {
-//   const allAdvertisers = await advertiserModel
-//     .find({ isDeleted: false })
-//     .select("_id name_ar name_en parent");
-
-//   const mainAdvertisers = allAdvertisers.filter((adv) => !adv.parent);
-
-//   const subAdvertisers = allAdvertisers.filter((adv) => adv.parent);
-
-//   res.status(200).json({
-//     mainAdvertisers,
-//     subAdvertisers,
-//   });
-// });
-
 export const getAllAdvertisersGrouped = catchError(async (req, res, next) => {
   const filterConditions = { isDeleted: false };
 
@@ -41,62 +26,6 @@ export const getAllAdvertisersGrouped = catchError(async (req, res, next) => {
   });
 });
 
-// export const getMainAdvertisers = catchError(async (req, res, next) => {
-//   const filterConditions = { isDeleted: false, parent: null };
-
-//   if (req.query.countryIds) {
-//     const countryIds = Array.isArray(req.query.countryIds)
-//       ? req.query.countryIds
-//       : [req.query.countryIds];
-
-//     filterConditions.country = { $in: countryIds };
-//   }
-
-//   const totalCount = await advertiserModel.countDocuments(filterConditions);
-
-//   const features = new APIFeatures(
-//     advertiserModel
-//       .find(filterConditions)
-//       .populate("parent", "name_ar name_en"),
-//     req.query
-//   );
-
-//   features.search().filter().sort().limitFields().paginate();
-
-//   const mainAdvertisers = await features.query;
-
-//   const advertisersWithChildrenCount = await Promise.all(
-//     mainAdvertisers.map(async (advertiser) => {
-//       const count = await advertiserModel.countDocuments({
-//         isDeleted: false,
-//         parent: advertiser._id,
-//       });
-//       return {
-//         ...advertiser.toObject(),
-//         childrenCount: count,
-//       };
-//     })
-//   );
-
-//   const page = req.query.page * 1 || 1;
-//   const limit = req.query.limit * 1 || 10;
-//   const skip = (page - 1) * limit;
-
-//   if (!advertisersWithChildrenCount.length) {
-//     return res.status(200).json({
-//       data: [],
-//       message: "لا توجد جهات رئيسية",
-//       totalCount,
-//       skip,
-//     });
-//   }
-
-//   res.status(200).json({
-//     data: advertisersWithChildrenCount,
-//     totalCount,
-//     skip,
-//   });
-// });
 export const getMainAdvertisers = catchError(async (req, res, next) => {
   const filterConditions = { isDeleted: false, parent: null };
 
@@ -269,8 +198,8 @@ export const updateAdvertiser = catchError(async (req, res, next) => {
 
 export const deleteAdvertiser = catchError(async (req, res, next) => {
   const { id } = req.params;
-  const advertiser = await advertiserModel.findById(id);
 
+  const advertiser = await advertiserModel.findById(id);
   if (!advertiser) {
     return next(new AppError("الجهة غير موجودة", 404));
   }
@@ -278,66 +207,19 @@ export const deleteAdvertiser = catchError(async (req, res, next) => {
     return next(new AppError("الجهة محذوفة بالفعل", 404));
   }
 
-  advertiser.isDeleted = true;
-  await advertiser.save();
+  if (advertiser.parent === null) {
+    await advertiserModel.updateOne({ _id: id }, { $set: { isDeleted: true } });
+
+    await advertiserModel.updateMany(
+      { parent: id, isDeleted: false },
+      { $set: { isDeleted: true } }
+    );
+  } else {
+    await advertiserModel.updateOne({ _id: id }, { $set: { isDeleted: true } });
+  }
 
   res.status(200).json({ message: "تم حذف الجهة المعلنة بنجاح" });
 });
-
-// export const getSubAdvertisersByParentId = catchError(
-//   async (req, res, next) => {
-//     const { id } = req.params;
-
-//     const parentExists = await advertiserModel
-//       .findOne({
-//         _id: id,
-//         isDeleted: false,
-//         parent: null,
-//       })
-//       .select("name_ar name_en");
-
-//     if (!parentExists) {
-//       return next(new AppError("الجهة الرئيسية غير موجودة", 404));
-//     }
-
-//     const totalCount = await advertiserModel.countDocuments({
-//       isDeleted: false,
-//       parent: id,
-//     });
-
-//     const features = new APIFeatures(
-//       advertiserModel
-//         .find({ isDeleted: false, parent: id })
-//         .populate("parent", "name_ar name_en"),
-//       req.query
-//     )
-//       .search()
-//       .filter()
-//       .sort()
-//       .limitFields()
-//       .paginate();
-
-//     const subAdvertisers = await features.query;
-
-//     const page = req.query.page * 1 || 1;
-//     console.log("req.query", req.query);
-//     console.log("req.query.limit", req.query.limit);
-//     const limit = req.query.limit * 1 || 10;
-//     console.log("limit", limit);
-//     const skip = (page - 1) * limit;
-
-//     if (!subAdvertisers.length) {
-//       return res.status(200).json({
-//         message: "لا توجد جهات فرعية لهذا المعلن",
-//         parent: parentExists,
-//       });
-//     }
-
-//     res
-//       .status(200)
-//       .json({ data: subAdvertisers, parent: parentExists, totalCount, skip });
-//   }
-// );
 
 export const getSubAdvertisersByParentId = catchError(
   async (req, res, next) => {
