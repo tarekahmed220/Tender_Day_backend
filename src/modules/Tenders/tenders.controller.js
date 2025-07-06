@@ -128,7 +128,9 @@ export const getAllTenders = catchError(async (req, res, next) => {
 
 export const getAllTendersForWebsite = catchError(async (req, res, next) => {
   let query = Tender.find({ isDeleted: false });
+  let countQuery = Tender.find({ isDeleted: false }); // query منفصل للـ count
 
+  // طبق الفلاتر على الاتنين
   if (req.body.countryNameEn) {
     const country = await countryModel.findOne({
       name_en: req.body.countryNameEn.trim(),
@@ -154,14 +156,25 @@ export const getAllTendersForWebsite = catchError(async (req, res, next) => {
   }
 
   if (req.body.countryIds && req.body.countryIds.length > 0) {
-    query = query.find({
+    const countryFilter = {
       country: {
         $in: req.body.countryIds.map((id) => new mongoose.Types.ObjectId(id)),
       },
-    });
+    };
+    query = query.find(countryFilter);
+    countQuery = countQuery.find(countryFilter); // طبق نفس الفلتر على الـ count query
   }
 
-  const featuresForCount = new APIFeatures(query.clone(), req.query)
+  if (req.body.mainFieldId) {
+    const mainFieldFilter = {
+      mainField: new mongoose.Types.ObjectId(req.body.mainFieldId),
+    };
+    query = query.find(mainFieldFilter);
+    countQuery = countQuery.find(mainFieldFilter); // طبق نفس الفلتر على الـ count query
+  }
+
+  // طبق الـ APIFeatures على الـ count query كمان
+  const featuresForCount = new APIFeatures(countQuery, req.query)
     .search()
     .filter();
 
