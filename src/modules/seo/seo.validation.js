@@ -13,4 +13,4 @@ export const seoValidation = Joi.object({
   description_en: Joi.string().trim().required().messages({
     "string.empty": "الوصف بالإنجليزية مطلوب",
   }),
-});
+}).unknown();
