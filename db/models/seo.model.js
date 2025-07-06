@@ -13,12 +13,22 @@ const seoSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    title: {
+    title_ar: {
       type: String,
       required: true,
       trim: true,
     },
-    description: {
+    title_en: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    description_ar: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    description_en: {
       type: String,
       required: true,
       trim: true,

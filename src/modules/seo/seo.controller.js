@@ -29,11 +29,13 @@ export const getSeoById = catchError(async (req, res, next) => {
 
 export const updateSeo = catchError(async (req, res, next) => {
   const { id } = req.params;
-  const { title, description } = req.body;
+  const { title_ar, title_en, description_ar, description_en } = req.body;
   const seo = await Seo.findOne({ id, deleted: false });
   if (!seo) return next(new AppError("الصفحة غير موجودة", 404));
-  if (title) seo.title = title;
-  if (description) seo.description = description;
+  if (title_ar) seo.title_ar = title_ar;
+  if (title_en) seo.title_en = title_en;
+  if (description_ar) seo.description_ar = description_ar;
+  if (description_en) seo.description_en = description_en;
   await seo.save();
   res.status(200).json({ message: "تم التحديث بنجاح", data: seo });
 });
