@@ -24,6 +24,7 @@ import currencyRoutes from "./src/modules/currency/currency.routes.js";
 import messagesRoutes from "./src/modules/messages/message.routes.js";
 import "./src/modules/utility/scheduler.js";
 import sitemapRouter from "./src/modules/sitemap/sitemap.routes.js";
+import seoRoutes from "./src/modules/seo/seo.routes.js";
 // import { startSitemapJob } from "./src/modules/utility/sitemapJob.js";
 dotenv.config();
 const app = express();
@@ -108,6 +109,7 @@ app.use(`/api/v1/messages`, messagesRoutes);
 app.use(`/api/v1/site-info`, siteInfoRoutes);
 app.use(`/api/v1/tenders`, tenderRoutes);
 app.use(`/api/v1/currencies`, currencyRoutes);
+app.use(BASE_URL + "/seo", seoRoutes);
 
 app.use(
   session({
