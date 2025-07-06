@@ -109,7 +109,7 @@ app.use(`/api/v1/messages`, messagesRoutes);
 app.use(`/api/v1/site-info`, siteInfoRoutes);
 app.use(`/api/v1/tenders`, tenderRoutes);
 app.use(`/api/v1/currencies`, currencyRoutes);
-app.use(BASE_URL + "/seo", seoRoutes);
+app.use(`/api/v1/seo`, seoRoutes);
 
 app.use(
   session({

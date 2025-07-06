@@ -5,14 +5,8 @@ import { validation } from "../../middleware/validation.js";
 import { seoValidation } from "./seo.validation.js";
 
 const router = express.Router();
+router.get("/", getAllSeo);
 
-router.post(
-  "/",
-  protect,
-  restrictTo("admin"),
-  validation(seoValidation),
-  createSeo
-);
 router.put(
   "/:id",
   protect,
@@ -20,6 +14,5 @@ router.put(
   validation(seoValidation),
   updateSeo
 );
-router.get("/", getAllSeo);
 
 export default router;
