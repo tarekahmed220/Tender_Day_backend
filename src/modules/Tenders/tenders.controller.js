@@ -56,6 +56,76 @@ export const getAllTenders = catchError(async (req, res, next) => {
   });
 });
 
+// export const getAllTendersForWebsite = catchError(async (req, res, next) => {
+//   let query = Tender.find({ isDeleted: false });
+
+//   if (req.body.countryNameEn) {
+//     const country = await countryModel.findOne({
+//       name_en: req.body.countryNameEn.trim(),
+//     });
+
+//     if (country) {
+//       req.body.countryIds = [country._id];
+//     } else {
+//       return res.status(404).json({ message: "Country not found" });
+//     }
+//   }
+
+//   if (req.body.mainFieldNameEn) {
+//     const mainField = await fieldModel.findOne({
+//       name_en: req.body.mainFieldNameEn.trim(),
+//     });
+
+//     if (mainField) {
+//       req.body.mainFieldId = mainField._id.toString();
+//     } else {
+//       return res.status(404).json({ message: "Main field not found" });
+//     }
+//   }
+
+//   if (req.body.countryIds && req.body.countryIds.length > 0) {
+//     query = query.find({
+//       country: {
+//         $in: req.body.countryIds.map((id) => new mongoose.Types.ObjectId(id)),
+//       },
+//     });
+//   }
+
+//   const featuresForCount = new APIFeatures(query.clone(), req.query)
+//     .search()
+//     .filter();
+
+//   const filteredCount = await featuresForCount.query.countDocuments();
+//   const page = req.query.page * 1 || 1;
+//   const limit = req.query.limit * 1 || 10;
+//   const skip = (page - 1) * limit;
+
+//   const features = new APIFeatures(
+//     query
+//       .select(
+//         "name_ar name_en tenderNumber createdAt closingDate mainField subField country"
+//       )
+//       .populate("mainField", "name_ar name_en")
+//       .populate("subField", "name_ar name_en")
+//       .populate("country", "name_ar name_en"),
+//     req.query
+//   )
+//     .search()
+//     .filter()
+//     .sort()
+//     .limitFields()
+//     .paginate();
+
+//   const tenders = await features.query.lean();
+
+//   res.status(200).json({
+//     data: tenders,
+//     totalCount: filteredCount,
+//     pageCount: Math.ceil(filteredCount / (req.query.limit || 10)),
+//     skip,
+//   });
+// });
+
 export const getAllTendersForWebsite = catchError(async (req, res, next) => {
   let query = Tender.find({ isDeleted: false });
 
