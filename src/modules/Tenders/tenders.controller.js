@@ -5,7 +5,8 @@ import Tender from "../../../db/models/tender.model.js";
 import catchError from "../../middleware/handleError.js";
 import APIFeatures from "../utility/APIFeatures.js";
 import AppError from "../utility/appError.js";
-import advertiserModel from "../../../db/models/advertiser.model.js";
+import countryModel from "../../../db/models/country.model.js";
+import fieldModel from "../../../db/models/fields.model.js";
 
 const baseUrl = (req) =>
   process.env.NODE_ENV === "production"
@@ -56,8 +57,31 @@ export const getAllTenders = catchError(async (req, res, next) => {
 });
 
 export const getAllTendersForWebsite = catchError(async (req, res, next) => {
-  console.log("query", req.query);
   let query = Tender.find({ isDeleted: false });
+
+  if (req.body.countryNameEn) {
+    const country = await countryModel.findOne({
+      name_en: req.body.countryNameEn.trim(),
+    });
+
+    if (country) {
+      req.body.countryIds = [country._id];
+    } else {
+      return res.status(404).json({ message: "Country not found" });
+    }
+  }
+
+  if (req.body.mainFieldNameEn) {
+    const mainField = await fieldModel.findOne({
+      name_en: req.body.mainFieldNameEn.trim(),
+    });
+
+    if (mainField) {
+      req.body.mainFieldId = mainField._id.toString();
+    } else {
+      return res.status(404).json({ message: "Main field not found" });
+    }
+  }
 
   if (req.body.countryIds && req.body.countryIds.length > 0) {
     query = query.find({
